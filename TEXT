@@ -1,0 +1,82 @@
+-----Main Menu-----
+What kinds of operation would you like to perform?
+1. Operations for administrator
+2. Operations for exploration companied (rental customers)
+3. Operations for spacecraft rental staff
+0. Exit the program
+Enter Your Choice: 
+
+-----Operations for administrator menu-----
+What kinds of operation would you like to perform?
+1. Create all tables
+2. Delete all tables
+3. Load data from a dataset
+4. Show number of records in each table
+0. Return to the main menu
+Enter Your Choice:
+Processing...Done! Database is initialized!
+Processing...Done! Database is removed!
+Type in the Source Data Folder Path: given_data
+Processing...Data are successfully loaded!
+Number of records in each table:
+
+-----Operations for exploration companies (rental customers)-----
+1. Search for NEAs based on some criteria
+2. Search for spacecrafts based on some criteria
+3. A certain NEA exploration mission design
+4. The most beneficial NEA exploration mission design
+0. Return to the main menu
+
+Choose the search criterion:
+1. ID
+2. Family
+3. Resource type
+My criterion:
+Type in the search keyboard
+|ID|Distance|Family|Duration|Energy|Resources|
+
+End of Query
+
+Choose the search criterion:
+1. Agency Name
+2. Type
+3. Least energy [km/s]
+4. Least working time [days]
+5. Least capacity [m^3]
+My criterion:
+Type in the search keyboard
+|Agency|MID|SNum|Type|Energy|T|Capacity|Charge|
+
+Type in the NEA ID:
+All possible solutions:
+|Agency|MID|SNum|Cost|Benefit|
+
+Typing in your budget [$]:
+Typing in the resource type:
+The most beneficial mission is:
+|NEA ID|Family|Agency|MID|SNum|Duration|Cost|Benefit|
+
+
+-----Operations for spacecraft rental staff-----
+1. Rent a spacecraft
+2. Return a spacecraft
+3. List all the spacecraft currently rented out (on a mission) for a certain period
+4. List the number of spacecrafts currently rented out by each Agency
+0. Return to the main menu
+Enter your choice:
+Enter the space agency name:
+Enter the MID:
+Enter the SNum:
+Spacecraft rented successfully!
+Spacecraft returned successfully!
+
+Typing in the starting date [DD-MM-YYYY]:
+Typing in the ending date [DD-MM-YYYY]:
+List of the unrented spacecraft:
+|Agency|MID|SNum|Checkout Date|
+
+| Agency | Number |
+
+[Error] the spacecraft does not exist.
+Rental not possible because the spacecraft has not yet been returned.
+Rental not possible because the spacecraft is not found.
