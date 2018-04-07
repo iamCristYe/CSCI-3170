@@ -32,7 +32,7 @@ Choose the search criterion:
 2. Family
 3. Resource type
 My criterion:
-Type in the search keyboard
+Type in the search keyword
 |ID|Distance|Family|Duration|Energy|Resources|
 
 End of Query
@@ -44,7 +44,7 @@ Choose the search criterion:
 4. Least working time [days]
 5. Least capacity [m^3]
 My criterion:
-Type in the search keyboard
+Type in the search keyword
 |Agency|MID|SNum|Type|Energy|T|Capacity|Charge|
 
 Type in the NEA ID:
@@ -63,7 +63,7 @@ The most beneficial mission is:
 3. List all the spacecraft currently rented out (on a mission) for a certain period
 4. List the number of spacecrafts currently rented out by each Agency
 0. Return to the main menu
-Enter your choice:
+Enter Your Choice:
 Enter the space agency name:
 Enter the MID:
 Enter the SNum:
