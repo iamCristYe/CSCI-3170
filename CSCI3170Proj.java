@@ -79,7 +79,7 @@ public class CSCI3170Proj {
 				System.out.println("[Error]: Wrong Input, Type in again!!!");
 			}
 		}
-		System.out.println();
+		//System.out.println();
 		System.out.println("Type in the search keyword");
 		keyword = menuAns.nextLine();
 		if(answer.equals("1")){
@@ -112,7 +112,7 @@ public class CSCI3170Proj {
 				System.out.println("[Error]: Wrong Input, Type in again!!!");
 			}
 		}
-		System.out.println();
+		//System.out.println();
 		System.out.println("Type in the search keyword");
 		keyword = menuAns.nextLine();
 		if(answer.equals("1")){
