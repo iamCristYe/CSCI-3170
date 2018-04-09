@@ -19,6 +19,7 @@ public class CSCI3170Proj {
 			System.exit(0);
 		} catch (SQLException e) {
 			System.out.println(e);
+			System.exit(0);//To avoid "false connection"
 		}
 		return con;
 	}
@@ -257,7 +258,6 @@ public class CSCI3170Proj {
 	}
 
 	public static void neaSearch(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		//TODO
 		String method = "";
 		String keyword = "";
 		String searchSQL = "";
@@ -266,15 +266,13 @@ public class CSCI3170Proj {
 		searchSQL += "SELECT N.NID, N.Distance, N.Family, N.Duration, N.Energy, N.RType ";
 		searchSQL += "FROM NEA N ";
 
-
-
 		while (true) {
 			System.out.println();
 			System.out.println("Choose the search criterion:");
 			System.out.println("1. ID");
 			System.out.println("2. Family");
 			System.out.println("3. Resource type");
-			System.out.println("My criterion:");
+			System.out.print("My criterion:");
 			method = menuAns.nextLine();
 			if (method.equals("1") || method.equals("2") || method.equals("3")) {
 				break;
@@ -282,9 +280,9 @@ public class CSCI3170Proj {
 				System.out.println("[Error]: Wrong Input, Type in again!!!");
 			}
 		}
-		//System.out.println();
+
 		while (true){
-			System.out.println("Type in the search keyword");
+			System.out.print("Type in the search keyword");
 			keyword = menuAns.nextLine();
 			if (!keyword.isEmpty()) break;
 		}
@@ -314,9 +312,18 @@ public class CSCI3170Proj {
 	}
 
 	public static void spacecraftSearch(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		//TODO
+		//NOTE: 1 issue(s)
+		//1. output. The requirement text is inconsistant with the sample result screenshot
+		
+
 		String answer = "";
 		String keyword = "";
+		String searchSQL = "";
+		PreparedStatement stmt = null;
+
+		searchSQL += "SELECT S.Agency, S.MID, S.Num, S.Type, S.Energy, S.Duration, S.Capacity, S.Charge ";
+		searchSQL += "FROM Spacecraft_Model S ";
+		
 		while (true) {
 			System.out.println();
 			System.out.println("Choose the search criterion:");
@@ -325,7 +332,7 @@ public class CSCI3170Proj {
 			System.out.println("3. Least energy [km/s]");
 			System.out.println("4. Least working time [days]");
 			System.out.println("5. Least capacity [m^3]");
-			System.out.println("My criterion:");
+			System.out.print("My criterion:");
 			answer = menuAns.nextLine();
 			if (answer.equals("1") || answer.equals("2") || answer.equals("3") || answer.equals("4")
 					|| answer.equals("5")) {
@@ -334,20 +341,46 @@ public class CSCI3170Proj {
 				System.out.println("[Error]: Wrong Input, Type in again!!!");
 			}
 		}
-		//System.out.println();
-		System.out.println("Type in the search keyword");
-		keyword = menuAns.nextLine();
-		if (answer.equals("1")) {
-			;
-		} else if (answer.equals("2")) {
-			;
-		} else if (answer.equals("3")) {
-			;
-		} else if (answer.equals("4")) {
-			;
-		} else if (answer.equals("5")) {
-			;
+
+		while (true){
+			System.out.print("Type in the search keyword");
+			keyword = menuAns.nextLine();
+			if (!keyword.isEmpty()) break;
 		}
+		
+		if (answer.equals("1")) {
+			searchSQL += "WHERE S.Agency=?";
+			stmt = mySQLDB.prepareStatement(searchSQL);
+			stmt.setString(1,keyword);
+		} else if (answer.equals("2")) {
+			searchSQL += "WHERE S.Type=?";
+			stmt = mySQLDB.prepareStatement(searchSQL);
+			stmt.setString(1,keyword);
+		} else if (answer.equals("3")) {
+			searchSQL += "WHERE S.Energy>?";
+			stmt = mySQLDB.prepareStatement(searchSQL);
+			stmt.setDouble(1,Double.parseDouble(keyword));
+		} else if (answer.equals("4")) {
+			searchSQL += "WHERE S.Duration>?";
+			stmt = mySQLDB.prepareStatement(searchSQL);
+			stmt.setInt(1,Integer.parseInt(keyword));
+		} else if (answer.equals("5")) {
+			searchSQL += "WHERE S.Capacity>?";
+			stmt = mySQLDB.prepareStatement(searchSQL);
+			stmt.setInt(1,Integer.parseInt(keyword));
+		}
+		
+		System.out.println("|Agency|MID|SNum|Type|Energy|T|Capacity|Charge|");
+		ResultSet resultSet = stmt.executeQuery();
+		while(resultSet.next()){
+			for (int i = 1; i<=8; i++){
+				System.out.print("|" + resultSet.getString(i));
+			}
+			System.out.println("|");
+		}
+		System.out.println("End of Query");
+		resultSet.close();
+		stmt.close();
 	}
 
 	public static void certainDesign(Scanner menuAns, Connection mySQLDB) throws SQLException {
