@@ -1,0 +1,71 @@
+WORK TO DO LIST
+
+PLEASE STATE WHAT YOU ARE CURRENTLY WORKING ON BY @NAME, AND WHAT YOU HAVE DONE BY #DONE
+PLEASE ADD ITEMS IF NECESSARY
+
+IMPLEMENTATION
+--------------------
+main;#DONE
+connectToOracle;#DONE
+adminMenu;#DONE
+customerMenu;#DONE
+staffMenu；#DONE
+
+createTables;#DONE
+deleteTables;#DONE
+loadTables;#DONE
+showTables;#DONE
+
+neaSearch;#DONE
+spacecraftSearch;@ZR
+certainDesign;
+bestDesign;
+
+rentSpacecraft;
+returnSpacecraft;
+listRentedByTime;
+listRentedNum;
+
+====================
+
+
+CHECK REQUIREMENT
+--------------------
+PROJECT REQUIREMENT DOCUMENT;
+INTERFACE & SPELLING;
+
+====================
+
+
+UNIT TEST
+--------------------
+createTables;
+deleteTables;
+loadTables;
+showTables;
+
+neaSearch;
+spacecraftSearch;
+certainDesign;
+bestDesign;
+
+rentSpacecraft;
+returnSpacecraft;
+listRentedByTime;
+listRentedNum;
+
+====================
+
+
+FULL TEST
+--------------------
+Local Test;
+Environment Test (Remote Linux Test);
+
+====================
+
+
+DOCUMENTATION
+--------------------
+Readme;
+
