@@ -253,8 +253,16 @@ public class CSCI3170Proj {
 
 	public static void neaSearch(Scanner menuAns, Connection mySQLDB) throws SQLException {
 		//TODO
-		String answer = "";
+		String method = "";
 		String keyword = "";
+		String searchSQL = "";
+		PreparedStatement stmt = null;
+
+		searchSQL += "SELECT N.NID, N.Distance, N.Family, N.Duration, N.Energy, N.RType ";
+		searchSQL += "FROM NEA N ";
+
+
+
 		while (true) {
 			System.out.println();
 			System.out.println("Choose the search criterion:");
@@ -262,24 +270,42 @@ public class CSCI3170Proj {
 			System.out.println("2. Family");
 			System.out.println("3. Resource type");
 			System.out.println("My criterion:");
-			answer = menuAns.nextLine();
-			if (answer.equals("1") || answer.equals("2") || answer.equals("3")) {
+			method = menuAns.nextLine();
+			if (method.equals("1") || method.equals("2") || method.equals("3")) {
 				break;
 			} else {
 				System.out.println("[Error]: Wrong Input, Type in again!!!");
 			}
 		}
 		//System.out.println();
-		System.out.println("Type in the search keyword");
-		keyword = menuAns.nextLine();
-		if (answer.equals("1")) {
-			;
-		} else if (answer.equals("2")) {
-			;
-		} else if (answer.equals("3")) {
-			;
-			//TODO
+		while (true){
+			System.out.println("Type in the search keyword");
+			keyword = menuAns.nextLine();
+			if (!keyword.isEmpty()) break;
 		}
+		
+		if (method.equals("1")) {
+			searchSQL += "WHERE N.NID='" + keyword +"'";
+		} else if (method.equals("2")) {
+			searchSQL += "WHERE N.Family LIKE '%" + keyword + "%'";
+		} else if (method.equals("3")) {
+			searchSQL += "WHERE N.RType LIKE '%" + keyword + "%'";
+		}
+
+		stmt = mySQLDB.prepareStatement(searchSQL);
+		
+		System.out.println("|ID|Distance|Family|Duration|Energy|Resources|");
+	
+		ResultSet resultSet = stmt.executeQuery();
+		while(resultSet.next()){
+			for (int i = 1; i<=6; i++){
+				System.out.print("|" + resultSet.getString(i));
+			}
+			System.out.println("|");
+		}
+		System.out.println("End of Query");
+		resultSet.close();
+		stmt.close();
 	}
 
 	public static void spacecraftSearch(Scanner menuAns, Connection mySQLDB) throws SQLException {
