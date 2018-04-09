@@ -5,20 +5,20 @@ PLEASE ADD ITEMS IF NECESSARY
 
 IMPLEMENTATION
 --------------------
-main;#DONE
-connectToOracle;#DONE
-adminMenu;#DONE
-customerMenu;#DONE
-staffMenu；#DONE
+main;@ZR#DONE
+connectToOracle;@ZR#DONE
+adminMenu;@ZR#DONE
+customerMenu;@ZR#DONE
+staffMenu;@ZR#DONE
 
 createTables;#DONE
 deleteTables;#DONE
 loadTables;#DONE
 showTables;#DONE
 
-neaSearch;#DONE
-spacecraftSearch;@ZR
-certainDesign;
+neaSearch;@ZR#DONE
+spacecraftSearch;@ZR#DONE
+certainDesign;@ZR
 bestDesign;
 
 rentSpacecraft;
