@@ -28,6 +28,7 @@ public class CSCI3170Proj {
 		Resource_SQL += "RType VARCHAR(2) PRIMARY KEY NOT NULL,";
 		Resource_SQL += "Density DOUBLE NOT NULL,";
 		Resource_SQL += "Value DOUBLE NOT NULL)";
+		Resource_SQL += "COLLATE=latin1_general_cs";//for case sensitive
 
 		String NEA_SQL = "CREATE TABLE NEA (";
 		NEA_SQL += "NID VARCHAR(10) PRIMARY KEY NOT NULL,";
@@ -38,6 +39,8 @@ public class CSCI3170Proj {
 		NEA_SQL += "RType VARCHAR(2),";
 		NEA_SQL += "FOREIGN KEY (RType) REFERENCES Resource(RType),";
 		NEA_SQL += "CHECK (Duration BETWEEN 100 AND 999))";
+		NEA_SQL += "COLLATE=latin1_general_cs";
+
 
 		String Spacecraft_Model_SQL = "CREATE TABLE Spacecraft_Model (";
 		Spacecraft_Model_SQL += "Agency VARCHAR(4) NOT NULL,";
@@ -53,6 +56,7 @@ public class CSCI3170Proj {
 		Spacecraft_Model_SQL += "CHECK (Charge BETWEEN 1 AND 99999),";
 		Spacecraft_Model_SQL += "CHECK (Capacity BETWEEN 1 AND 99),";
 		Spacecraft_Model_SQL += "CHECK (Duration BETWEEN 100 AND 999))";
+		Spacecraft_Model_SQL += "COLLATE=latin1_general_cs";
 
 		String RentalRecord_SQL = "CREATE TABLE RentalRecord (";
 		RentalRecord_SQL += "Agency VARCHAR(4) NOT NULL,";
@@ -63,6 +67,7 @@ public class CSCI3170Proj {
 		RentalRecord_SQL += "PRIMARY KEY (Agency, MID, SNum),";
 		RentalRecord_SQL += "FOREIGN KEY (Agency, MID) REFERENCES Spacecraft_Model(Agency, MID),";
 		RentalRecord_SQL += "CHECK (SNum BETWEEN 1 AND 99))";
+		RentalRecord_SQL += "COLLATE=latin1_general_cs";
 
 		Statement stmt = mySQLDB.createStatement();
 		System.out.print("Processing...");
