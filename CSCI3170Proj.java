@@ -385,6 +385,118 @@ public class CSCI3170Proj {
 
 	public static void certainDesign(Scanner menuAns, Connection mySQLDB) throws SQLException {
 		//TODO
+		//Testdata: FUCKSHIT not available in NEA list
+		//Testdata: 2008GD110 no resource
+		//Testdata: ??? very large Duration/Energy?
+		//For Duration/Energy, do we use > or >=? AGAIN not consistant in project.pdf (Here I used >= as stated in section 4.3)
+		String answer = "";
+		while (true){
+			System.out.print("Typing in the NEA ID:");
+			answer = menuAns.nextLine();
+			if (!answer.isEmpty()) break;
+		}
+		String NID = answer;
+
+		String indexSQL = "";
+		//Create a view of int range(1,100), for converting spacecraft_model Num to spacecraft SNum
+		indexSQL += "CREATE OR REPLACE VIEW singles AS ";
+		indexSQL += "SELECT 0 single ";
+		indexSQL += "UNION ALL SELECT   1 UNION ALL SELECT   2 UNION ALL SELECT   3 ";
+		indexSQL += "UNION ALL SELECT   4 UNION ALL SELECT   5 UNION ALL SELECT   6 ";
+		indexSQL += "UNION ALL SELECT   7 UNION ALL SELECT   8 UNION ALL SELECT   9; ";
+		PreparedStatement stmt = mySQLDB.prepareStatement(indexSQL);
+		stmt.execute();
+		indexSQL = "";
+		indexSQL += "CREATE OR REPLACE VIEW numbers AS ";
+		indexSQL += "SELECT (S1.single * 10 + S2.single) AS number ";
+		indexSQL += "FROM singles S1, singles S2 ";
+		indexSQL += "WHERE (S1.single + S2.single) >0 ";
+		indexSQL += "ORDER BY number ASC ;";
+		stmt = mySQLDB.prepareStatement(indexSQL);
+		stmt.execute();
+
+		String smSQL = "";
+		//Create a view of Spacecraft Models that are capable to do the job
+		smSQL += "CREATE OR REPLACE VIEW models AS ";
+		smSQL += "SELECT S.Agency, S.MID, S.Num, (N.Duration*S.Charge) AS Cost, (1000000*R.Density*R.Value*S.Capacity-N.Duration*S.Charge) AS Benefit ";
+		smSQL += "FROM Resource R, NEA N, Spacecraft_Model S ";
+		smSQL += "WHERE R.RType=N.RType ";
+		smSQL += "AND S.Type='A' AND S.Energy>=N.Energy AND S.Duration>=N.Duration ";
+		smSQL += "AND N.NID=? ;";
+		stmt = mySQLDB.prepareStatement(smSQL);
+		stmt.setString(1,NID);
+		stmt.execute();
+
+		String spacecraftSQL = "";
+		//Query of spacecrafts that are avalible to be rented
+		//If a spacecraft does not have a rental record, we regard it as one that has never been rented
+		spacecraftSQL += "SELECT M.Agency, M.MID, NO.number AS SNum, M.Cost, M.Benefit ";
+		spacecraftSQL += "FROM models M, numbers NO ";
+		spacecraftSQL += "WHERE M.Num>=NO.number ";
+		spacecraftSQL += "AND (M.Agency, M.MID, NO.number) NOT IN ( ";
+		spacecraftSQL += "    SELECT D.Agency, D.MID, D.SNum ";
+		spacecraftSQL += "    FROM RentalRecord D ";
+		spacecraftSQL += "    WHERE D.ReturnDate IS NULL) ";
+		spacecraftSQL += "ORDER BY M.Benefit DESC, SNum ASC; ";
+		stmt = mySQLDB.prepareStatement(spacecraftSQL);
+		
+		System.out.println("|Agency|MID|SNum|Cost|Benefit|");
+		ResultSet resultSet = stmt.executeQuery();
+		while(resultSet.next()){
+			for (int i = 1; i<=5; i++){
+				System.out.print("|" + resultSet.getString(i));//TODO: Adjust output format
+			}
+			System.out.println("|");
+		}
+		System.out.println("End of Query");
+		resultSet.close();
+
+		String dropViewSQL = "";
+		dropViewSQL	+= "DROP VIEW IF EXISTS singles, numbers, models; ";
+		stmt = mySQLDB.prepareStatement(dropViewSQL);
+		stmt.execute();
+		stmt.close();
+
+		//OLD ALGO (NOT FINISHED):
+		//Double Density = 0;
+		//Double Value =0;
+		// PreparedStatement stmt = mySQLDB.prepareStatement("SELECT R.Density, R.Value from Resource R, NEA where NEA.RType=R.RType and NEA.NID=?;");		
+		// stmt.setString(1,NID);
+		// ResultSet rs = stmt.executeQuery();
+		// if (!rs.next()) {  //empty set returned
+		// 	System.out.print("[Error]: NEA not found or NEA has no resource."); 
+		// } else {
+		// 		Density=rs.getDouble(1);
+		// 		Value=rs.getDouble(2);
+		// 		String viewSQL = ""
+		// 		viewSQL += "CREATE VIEW goodSM AS SELECT SM.Agency, SM.MID, SM.Num, SM.Charge, SM.Capacity from Spacecraft_Model SM,NEA where SM.Type='A' and SM.Energy>NEA.Energy and SM.Duration>NEA.Duration and NEA.NID=?;"
+		// 		viewSQL += "CREATE VIEW goodS AS SELECT  SM.Agency, SM.MID, SM.Num, SM.Charge, SM.Capacity;"
+		// 		stmt = mySQLDB.prepareStatement();
+
+		// 		stmt.setString(1,NID);
+		// 		ResultSet rs = stmt.executeQuery();
+		// 		stmt = mySQLDB.prepareStatement("SELECT * FROM goodSM;")
+		// 		if (!rs.next()) {  //empty set returned
+		// 			System.out.print("[Error]: No Spacecraft is able to carry out the mission as NEA's Duration is too long or NEA's Energy is too high."); 
+		// 		} 
+		// 		else{
+					
+		// 			while(rs.next()){
+		// 				for (int i = 1; i<=8; i++){
+		// 					listOfStringArrays.add(new String[] {resultSet.getString(1),resultSet.getString(2),resultSet.getString(3),resultSet.getString(4),resultSet.getString(5)});
+		// 				}
+	
+		// 			}
+
+		// 			Collections.sort(listOfStringArrays,new Comparator<String[]>() {
+		// 				public int compare(String[] strings, String[] otherStrings) {
+		// 					return strings[1].compareTo(otherStrings[1]);
+		// 				}
+		// 			});
+
+		// 		}
+		// 	}
+		// }
 	}
 
 	public static void bestDesign(Scanner menuAns, Connection mySQLDB) throws SQLException {
