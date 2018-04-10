@@ -311,9 +311,10 @@ public class CSCI3170Proj {
 	}
 
 	public static void spacecraftSearch(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		//NOTE: 1 issue(s)
+		//NOTE: 2 issue(s)
 		//1. output. The requirement text is inconsistant with the sample result screenshot
-		
+		//2. Num or SNum? Do we want the number of a certain MODEL in the search result,
+		//or the SNum for each INSTANCE?
 
 		String answer = "";
 		String keyword = "";
