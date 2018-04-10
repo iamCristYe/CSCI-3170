@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.Date;
 import java.sql.*;
 import java.io.*;
 
@@ -7,8 +8,8 @@ public class CSCI3170Proj {
 	public static String dbAddress = "jdbc:mysql://projgw.cse.cuhk.edu.hk:2312/db07";
 	public static String dbUsername = "Group07";
 	public static String dbPassword = "mogician";
-
 	// mysql --host=projgw --port=2312 -u Group07 -p
+	
 	public static Connection connectToOracle() {
 		Connection con = null;
 		try {
@@ -94,10 +95,10 @@ public class CSCI3170Proj {
 	}
 
 	public static void loadTables(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		String Resource_SQL = "INSERT INTO Resource (RType, Density, Value) VALUES (?,?,?)";
-		String NEA_SQL = "INSERT INTO NEA (NID, Distance, Family, Duration, Energy, RType) VALUES (?,?,?,?,?,?)";
-		String Spacecraft_Model_SQL = "INSERT INTO Spacecraft_Model (Agency, MID, Num, Charge, Duration, Energy, Capacity, Type) VALUES (?,?,?,?,?,?,?,?)";
-		String RentalRecord_SQL = "INSERT INTO RentalRecord (Agency, MID, SNum, CheckoutDate, ReturnDate) VALUES (?,?,?,STR_TO_DATE(?,'%d-%m-%Y'),STR_TO_DATE(?,'%d-%m-%Y'))";
+		//String Resource_SQL = "INSERT INTO Resource (RType, Density, Value) VALUES (?,?,?)";
+		//String NEA_SQL = "INSERT INTO NEA (NID, Distance, Family, Duration, Energy, RType) VALUES (?,?,?,?,?,?)";
+		//String Spacecraft_Model_SQL = "INSERT INTO Spacecraft_Model (Agency, MID, Num, Charge, Duration, Energy, Capacity, Type) VALUES (?,?,?,?,?,?,?,?)";
+		//String RentalRecord_SQL = "INSERT INTO RentalRecord (Agency, MID, SNum, CheckoutDate, ReturnDate) VALUES (?,?,?,STR_TO_DATE(?,'%d-%m-%Y'),STR_TO_DATE(?,'%d-%m-%Y'))";
 
 		String filePath = "";
 		while (true) {
@@ -110,7 +111,7 @@ public class CSCI3170Proj {
 
 		System.out.print("Processing...");
 		try {
-			PreparedStatement stmt = mySQLDB.prepareStatement(Resource_SQL);
+			PreparedStatement stmt = mySQLDB.prepareStatement("INSERT INTO Resource (RType, Density, Value) VALUES (?,?,?)");
 			String line = null;
 			BufferedReader dataReader = new BufferedReader(new FileReader(filePath + "/resources.txt"));
 			dataReader.readLine(); //skip the first line which is not data
@@ -129,7 +130,7 @@ public class CSCI3170Proj {
 		}
 
 		try {
-			PreparedStatement stmt = mySQLDB.prepareStatement(NEA_SQL);
+			PreparedStatement stmt = mySQLDB.prepareStatement("INSERT INTO NEA (NID, Distance, Family, Duration, Energy, RType) VALUES (?,?,?,?,?,?)");
 			String line = null;
 			BufferedReader dataReader = new BufferedReader(new FileReader(filePath + "/neas.txt"));
 			dataReader.readLine();
@@ -140,7 +141,6 @@ public class CSCI3170Proj {
 				stmt.setString(3, dataFields[2]);
 				stmt.setInt(4, Integer.parseInt(dataFields[3]));
 				stmt.setDouble(5, Double.parseDouble(dataFields[4]));
-				//  System.out.println(dataFields[5]);
 				if (dataFields[5].equals("null"))
 					stmt.setNull(6, java.sql.Types.VARCHAR);
 				else
@@ -155,26 +155,25 @@ public class CSCI3170Proj {
 		}
 
 		try {
-			PreparedStatement stmt = mySQLDB.prepareStatement(Spacecraft_Model_SQL);
+			PreparedStatement stmt = mySQLDB.prepareStatement("INSERT INTO Spacecraft_Model (Agency, MID, Num, Charge, Duration, Energy, Capacity, Type) VALUES (?,?,?,?,?,?,?,?)");
 
 			String line = null;
 			BufferedReader dataReader = new BufferedReader(new FileReader(filePath + "/spacecrafts.txt"));
 			dataReader.readLine();
 			while ((line = dataReader.readLine()) != null) {
 				String[] dataFields = line.split("\t");
-				stmt.setString(1, dataFields[0]);//Agency
-				stmt.setString(2, dataFields[1]);//MID
-				stmt.setInt(3, Integer.parseInt(dataFields[2]));//Num
-				stmt.setInt(4, Integer.parseInt(dataFields[7]));//Charge
-				stmt.setInt(5, Integer.parseInt(dataFields[5]));//Duration
-				stmt.setDouble(6, Double.parseDouble(dataFields[4]));//Energy
+				stmt.setString(1, dataFields[0]);						//Agency
+				stmt.setString(2, dataFields[1]);						//MID
+				stmt.setInt(3, Integer.parseInt(dataFields[2]));		//Num
+				stmt.setInt(4, Integer.parseInt(dataFields[7]));		//Charge
+				stmt.setInt(5, Integer.parseInt(dataFields[5]));		//Duration
+				stmt.setDouble(6, Double.parseDouble(dataFields[4]));	//Energy
 				if (dataFields[6].equals("null"))
 					stmt.setNull(7, java.sql.Types.INTEGER);
 				else
-					stmt.setInt(7, Integer.parseInt(dataFields[6]));//Capacity
-				stmt.setString(8, dataFields[3]);//Type
+					stmt.setInt(7, Integer.parseInt(dataFields[6]));	//Capacity
+				stmt.setString(8, dataFields[3]);						//Type
 				stmt.addBatch();
-				// Agency	MID	Num	Type	Energy(km/s)	T(days)	Capacity(m3)	Charge($/day)
 			}
 
 			stmt.executeBatch();
@@ -185,7 +184,7 @@ public class CSCI3170Proj {
 		}
 
 		try {
-			PreparedStatement stmt = mySQLDB.prepareStatement(RentalRecord_SQL);
+			PreparedStatement stmt = mySQLDB.prepareStatement("INSERT INTO RentalRecord (Agency, MID, SNum, CheckoutDate, ReturnDate) VALUES (?,?,?,STR_TO_DATE(?,'%d-%m-%Y'),STR_TO_DATE(?,'%d-%m-%Y'))");
 			String line = null;
 			BufferedReader dataReader = new BufferedReader(new FileReader(filePath + "/rentalrecords.txt"));
 			dataReader.readLine();
@@ -423,19 +422,144 @@ public class CSCI3170Proj {
 	}
 
 	public static void rentSpacecraft(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		//TODO
+		//Testdata: RSA 0199 5 not available in spacecraft list
+		//Testdata: RSA 0198 9 SNum > Num
+		//Testdata: RSA 0292 5 returned
+		//Testdata: RSA 0292 6 unreturned
+		//Testdata: RSA 0219 2 unable to find in RentalRecord (need add entry)
+
+		System.out.print("Enter the space agency name:");
+		String agency=menuAns.nextLine(); 
+		System.out.print("Enter the MID:");
+		String mid=menuAns.nextLine(); 
+		System.out.print("Enter the SNum:");
+		int snum=Integer.parseInt(menuAns.nextLine()); 
+
+		PreparedStatement stmt = mySQLDB.prepareStatement("select SM.Num from Spacecraft_Model SM where SM.Agency = ? AND SM.MID= ?");
+		stmt.setString(1, agency);
+		stmt.setString(2, mid);
+		ResultSet rs = stmt.executeQuery();
+		if (!rs.next()) {
+			System.out.print("[Error]: Rental not possible because the spacecraft is not found."); //not available in spacecraft list
+		} else if (snum>Integer.parseInt(rs.getString(1))) {
+			System.out.print("[Error]: Rental not possible because the spacecraft is not found."); //SNum > Num
+		}
+		else {
+			stmt = mySQLDB.prepareStatement("select RR.ReturnDate from RentalRecord RR where RR.Agency = ? AND RR.MID= ? AND RR.SNum =?");
+			stmt.setString(1, agency);
+			stmt.setString(2, mid);
+			stmt.setInt(3, snum);
+			rs = stmt.executeQuery();
+			
+			if (rs.next()&&rs.getString(1)==null ){//unreturned
+				System.out.print("[Error]: Rental not possible because the spacecraft has not yet been returned.");
+			} else {
+				stmt = mySQLDB.prepareStatement("INSERT INTO RentalRecord (Agency, MID, SNum,CheckoutDate,ReturnDate) VALUES(?, ?, ?,?,?) ON DUPLICATE KEY UPDATE CheckoutDate=?, ReturnDate=?");
+				stmt.setString(1, agency);
+				stmt.setString(2, mid);
+				stmt.setInt(3, snum);
+				java.util.Date utilDate = new java.util.Date();
+   				java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+				stmt.setDate(4, sqlDate);
+				stmt.setNull(5, java.sql.Types.DATE);
+				stmt.setDate(6, sqlDate);
+				stmt.setNull(7, java.sql.Types.DATE);
+				stmt.executeUpdate();
+				System.out.print("Spacecraft rented successfully!");
+			}
+		}
+
+		rs.close();
+		stmt.close();
 	}
 
 	public static void returnSpacecraft(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		//TODO
+		//Testdata: RSA 0199 5 not available in spacecraft list
+		//Testdata: RSA 0198 9 SNum > Num
+		//Testdata: RSA 0292 5 returned
+		//Testdata: RSA 0292 6 unreturned
+		
+		System.out.print("Enter the space agency name:");
+		String agency=menuAns.nextLine(); 
+		System.out.print("Enter the MID:");
+		String mid=menuAns.nextLine(); 
+		System.out.print("Enter the SNum:");
+		int snum=Integer.parseInt(menuAns.nextLine()); 
+
+		PreparedStatement stmt = mySQLDB.prepareStatement("select SM.Num from Spacecraft_Model SM where SM.Agency = ? AND SM.MID= ?");
+		stmt.setString(1, agency);
+		stmt.setString(2, mid);
+		ResultSet rs = stmt.executeQuery();
+		if (!rs.next()) {
+			System.out.print("[Error]: Return not possible because the spacecraft is not found."); //not available in spacecraft list
+		} else if (snum>Integer.parseInt(rs.getString(1))) {
+			System.out.print("[Error]: Return not possible because the spacecraft is not found."); //SNum > Num
+		}
+		else {
+			stmt = mySQLDB.prepareStatement("select RR.ReturnDate from RentalRecord RR where RR.Agency = ? AND RR.MID= ? AND RR.SNum =?");
+			stmt.setString(1, agency);
+			stmt.setString(2, mid);
+			stmt.setInt(3, snum);
+			rs = stmt.executeQuery();
+			
+			if (rs.next()&&rs.getString(1)==null ){//unreturned
+				stmt = mySQLDB.prepareStatement("INSERT INTO RentalRecord (Agency, MID, SNum) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE ReturnDate=?");
+				stmt.setString(1, agency);
+				stmt.setString(2, mid);
+				stmt.setInt(3, snum);
+				java.util.Date utilDate = new java.util.Date();
+   				java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+				stmt.setDate(4, sqlDate);
+				stmt.setNull(5, java.sql.Types.DATE);
+				stmt.executeUpdate();
+				System.out.print("Spacecraft returned successfully!");				
+			} else {
+				System.out.print("[Error]: Return not possible because the spacecraft has not yet been rented.");				
+			}
+		}
+
+		rs.close();
+		stmt.close();
 	}
 
 	public static void listRentedByTime(Scanner menuAns, Connection mySQLDB) throws SQLException {
-
+		String startTime = "";
+		PreparedStatement stmt = mySQLDB.prepareStatement("SELECT RR.Agency, RR.MID, RR.SNum, RR.CheckoutDate FROM RentalRecord RR where RR.CheckoutDate>=STR_TO_DATE(?,'%d-%m-%Y') and RR.CheckoutDate<=STR_TO_DATE(?,'%d-%m-%Y') order by CheckoutDate desc ");
+		
+		System.out.println();
+		System.out.print("Typing in the starting date [DD-MM-YYYY]:");
+		stmt.setString(1,menuAns.nextLine());
+		System.out.print("Typing in the ending date [DD-MM-YYYY]:");
+		stmt.setString(2,menuAns.nextLine());
+		
+		System.out.println("List of the unrented spacecraft:");
+		System.out.println("|Agency| MID|SNum|Checkout Date|");
+		ResultSet resultSet = stmt.executeQuery();
+		while(resultSet.next()){
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));   
+			System.out.print("|" + String.format("%1$3s", resultSet.getString(2)));   
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));   
+			System.out.print("|" + String.format("%1$13s", resultSet.getString(4)));   
+			System.out.println("|");
+		}
+		System.out.println("End of Query");
+		resultSet.close();
+		stmt.close();
 	}
 
 	public static void listRentedNum(Scanner menuAns, Connection mySQLDB) throws SQLException {
-
+		String startTime = "";
+		PreparedStatement stmt = mySQLDB.prepareStatement("select RR.Agency,count(*) from RentalRecord RR where RR.returndate is null group by RR.agency order by agency asc; ");
+		System.out.println("|Agency|Number|");
+		ResultSet resultSet = stmt.executeQuery();
+		while(resultSet.next()){
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));   
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(2)));
+			System.out.println("|");
+		}
+		System.out.println("End of Query");
+		resultSet.close();
+		stmt.close();
 	}
 
 	public static void staffMenu(Scanner menuAns, Connection mySQLDB) throws SQLException {
