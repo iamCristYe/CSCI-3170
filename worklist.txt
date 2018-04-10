@@ -19,7 +19,7 @@ showTables;#DONE
 neaSearch;@ZR#DONE
 spacecraftSearch;@ZR#DONE!ISSUE
 certainDesign;@ZR#DONE
-bestDesign;@ZR
+bestDesign;@ZR#DONE
 
 rentSpacecraft;#DONE
 returnSpacecraft;#DONE
@@ -32,6 +32,9 @@ listRentedNum;#DONE
 CHECK REQUIREMENT
 --------------------
 PROJECT REQUIREMENT DOCUMENT;
+-DISTINCTION of results
+-
+//more requirement to be parsed from pdf
 INTERFACE & SPELLING;
 
 ====================
