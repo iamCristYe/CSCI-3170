@@ -17,14 +17,14 @@ loadTables;#DONE
 showTables;#DONE
 
 neaSearch;@ZR#DONE
-spacecraftSearch;@ZR#DONE
-certainDesign;@ZR
-bestDesign;
+spacecraftSearch;@ZR#DONE!ISSUE
+certainDesign;@ZR#DONE
+bestDesign;@ZR
 
-rentSpacecraft;
-returnSpacecraft;
-listRentedByTime;
-listRentedNum;
+rentSpacecraft;#DONE
+returnSpacecraft;#DONE
+listRentedByTime;#DONE
+listRentedNum;#DONE
 
 ====================
 
