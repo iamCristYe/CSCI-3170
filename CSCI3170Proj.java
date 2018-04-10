@@ -314,7 +314,7 @@ public class CSCI3170Proj {
 		//NOTE: 2 issue(s)
 		//1. output. The requirement text is inconsistant with the sample result screenshot
 		//2. Num or SNum? Do we want the number of a certain MODEL in the search result,
-		//or the SNum for each INSTANCE?
+		//or the SNum for each INSTANCE? (if SNum, we may consider reconstruction since this is done 3 times)
 
 		String answer = "";
 		String keyword = "";
@@ -444,7 +444,7 @@ public class CSCI3170Proj {
 		ResultSet resultSet = stmt.executeQuery();
 		while(resultSet.next()){
 			for (int i = 1; i<=5; i++){
-				System.out.print("|" + resultSet.getString(i));//TODO: Adjust output format
+				System.out.print("|" + resultSet.getString(i));
 			}
 			System.out.println("|");
 		}
@@ -500,7 +500,84 @@ public class CSCI3170Proj {
 	}
 
 	public static void bestDesign(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		//TODO
+		String answer = ""; 
+		while (true){
+			System.out.print("Typing in your budget [$]: ");
+			answer = menuAns.nextLine();
+			if (!answer.isEmpty()) break;
+		}
+		int budget = Integer.parseInt(answer);
+		while (true){
+			System.out.print("Typing in the resource type: ");
+			answer = menuAns.nextLine();
+			if (!answer.isEmpty()) break;
+		}
+		String rtype = answer;
+
+		String indexSQL = "";
+		//Create a view of int range(1,100), for converting spacecraft_model Num to spacecraft SNum
+		indexSQL += "CREATE OR REPLACE VIEW singles AS ";
+		indexSQL += "SELECT 0 single ";
+		indexSQL += "UNION ALL SELECT   1 UNION ALL SELECT   2 UNION ALL SELECT   3 ";
+		indexSQL += "UNION ALL SELECT   4 UNION ALL SELECT   5 UNION ALL SELECT   6 ";
+		indexSQL += "UNION ALL SELECT   7 UNION ALL SELECT   8 UNION ALL SELECT   9; ";
+		PreparedStatement stmt = mySQLDB.prepareStatement(indexSQL);
+		stmt.execute();
+		indexSQL = "";
+		indexSQL += "CREATE OR REPLACE VIEW numbers AS ";
+		indexSQL += "SELECT (S1.single * 10 + S2.single) AS number ";
+		indexSQL += "FROM singles S1, singles S2 ";
+		indexSQL += "WHERE (S1.single + S2.single) >0 ";
+		indexSQL += "ORDER BY number ASC ;";
+		stmt = mySQLDB.prepareStatement(indexSQL);
+		stmt.execute();
+
+		String smSQL = "";
+		//Create a view of Spacecraft Models that are capable to do the job
+		smSQL += "CREATE OR REPLACE VIEW models AS ";
+		smSQL += "SELECT N.NID, N.Family, S.Agency, S.MID, S.Num, N.Duration, (N.Duration*S.Charge) AS Cost, (1000000*R.Density*R.Value*S.Capacity-N.Duration*S.Charge) AS Benefit ";
+		smSQL += "FROM Resource R, NEA N, Spacecraft_Model S ";
+		smSQL += "WHERE R.RType=N.RType ";
+		smSQL += "AND S.Type='A' AND S.Energy>=N.Energy AND S.Duration>=N.Duration ";
+		smSQL += "AND R.Rtype=? AND (N.Duration*S.Charge)<= ? ;";
+		stmt = mySQLDB.prepareStatement(smSQL);
+		stmt.setString(1,rtype);
+		stmt.setInt(2,budget);
+		stmt.execute();
+
+		String spacecraftSQL = "";
+		//Query of spacecrafts that are avalible to be rented
+		//If a spacecraft does not have a rental record, we regard it as one that has never been rented
+		spacecraftSQL += "SELECT M.NID, M.Family, M.Agency, M.MID, NO.number AS SNum, M.Duration, M.Cost, M.Benefit ";
+		spacecraftSQL += "FROM models M, numbers NO ";
+		spacecraftSQL += "WHERE M.Num>=NO.number ";
+		spacecraftSQL += "AND (M.Agency, M.MID, NO.number) NOT IN ( ";
+		spacecraftSQL += "    SELECT D.Agency, D.MID, D.SNum ";
+		spacecraftSQL += "    FROM RentalRecord D ";
+		spacecraftSQL += "    WHERE D.ReturnDate IS NULL) ";
+		spacecraftSQL += "ORDER BY M.Benefit DESC, SNum ASC; ";
+		stmt = mySQLDB.prepareStatement(spacecraftSQL);
+
+		System.out.println("|NEA ID|Family|Agency|MID|SNum|Duration|Cost|Benefit|");
+		ResultSet resultSet = stmt.executeQuery();
+		if (resultSet.next()){//We print only the first line, if exists
+			for (int i = 1; i<=8; i++){
+				System.out.print("|" + resultSet.getString(i));
+			}
+			System.out.println("|");
+		}else{//empty result
+			System.out.println("No result available");//DO I need to output this? PS:this should not be regarded as an "ERROR"
+		}
+
+		System.out.println("End of Query");
+		resultSet.close();
+
+
+		String dropViewSQL = "";
+		dropViewSQL	+= "DROP VIEW IF EXISTS singles, numbers, models; ";
+		stmt = mySQLDB.prepareStatement(dropViewSQL);
+		stmt.execute();
+		stmt.close();
 	}
 
 	public static void customerMenu(Scanner menuAns, Connection mySQLDB) throws SQLException {//done
