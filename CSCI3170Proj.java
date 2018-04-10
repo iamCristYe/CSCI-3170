@@ -26,13 +26,13 @@ public class CSCI3170Proj {
 	}
 
 	public static void createTables(Connection mySQLDB) throws SQLException {
-		String Resource_SQL = "CREATE TABLE Resource (";
+		String Resource_SQL = "CREATE TABLE IF NOT EXISTS Resource (";
 		Resource_SQL += "RType VARCHAR(2) PRIMARY KEY NOT NULL,";
 		Resource_SQL += "Density DOUBLE NOT NULL,";
 		Resource_SQL += "Value DOUBLE NOT NULL)";
 		Resource_SQL += "COLLATE=latin1_general_cs";//for case sensitive
 
-		String NEA_SQL = "CREATE TABLE NEA (";
+		String NEA_SQL = "CREATE TABLE IF NOT EXISTS NEA (";
 		NEA_SQL += "NID VARCHAR(10) PRIMARY KEY NOT NULL,";
 		NEA_SQL += "Distance DOUBLE NOT NULL,";
 		NEA_SQL += "Family VARCHAR(6) NOT NULL,";
@@ -44,7 +44,7 @@ public class CSCI3170Proj {
 		NEA_SQL += "COLLATE=latin1_general_cs";
 
 
-		String Spacecraft_Model_SQL = "CREATE TABLE Spacecraft_Model (";
+		String Spacecraft_Model_SQL = "CREATE TABLE IF NOT EXISTS Spacecraft_Model (";
 		Spacecraft_Model_SQL += "Agency VARCHAR(4) NOT NULL,";
 		Spacecraft_Model_SQL += "MID VARCHAR(4) NOT NULL,";
 		Spacecraft_Model_SQL += "Num INT NOT NULL,";
@@ -60,7 +60,7 @@ public class CSCI3170Proj {
 		Spacecraft_Model_SQL += "CHECK (Duration BETWEEN 100 AND 999))";
 		Spacecraft_Model_SQL += "COLLATE=latin1_general_cs";
 
-		String RentalRecord_SQL = "CREATE TABLE RentalRecord (";
+		String RentalRecord_SQL = "CREATE TABLE IF NOT EXISTS RentalRecord (";
 		RentalRecord_SQL += "Agency VARCHAR(4) NOT NULL,";
 		RentalRecord_SQL += "MID VARCHAR(4) NOT NULL,";
 		RentalRecord_SQL += "SNum INT NOT NULL,";
