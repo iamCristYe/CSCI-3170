@@ -311,18 +311,36 @@ public class CSCI3170Proj {
 	}
 
 	public static void spacecraftSearch(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		//NOTE: 2 issue(s)
-		//1. output. The requirement text is inconsistant with the sample result screenshot
-		//2. Num or SNum? Do we want the number of a certain MODEL in the search result,
-		//or the SNum for each INSTANCE? (if SNum, we may consider reconstruction since this is done 3 times)
+
 
 		String answer = "";
 		String keyword = "";
 		String searchSQL = "";
 		PreparedStatement stmt = null;
 
-		searchSQL += "SELECT S.Agency, S.MID, S.Num, S.Type, S.Energy, S.Duration, S.Capacity, S.Charge ";
-		searchSQL += "FROM Spacecraft_Model S ";
+		String indexSQL = "";
+		//Create a view of int range(1,100), for converting spacecraft_model Num to spacecraft SNum
+		indexSQL += "CREATE OR REPLACE VIEW singles AS ";
+		indexSQL += "SELECT 0 single ";
+		indexSQL += "UNION ALL SELECT   1 UNION ALL SELECT   2 UNION ALL SELECT   3 ";
+		indexSQL += "UNION ALL SELECT   4 UNION ALL SELECT   5 UNION ALL SELECT   6 ";
+		indexSQL += "UNION ALL SELECT   7 UNION ALL SELECT   8 UNION ALL SELECT   9; ";
+		stmt = mySQLDB.prepareStatement(indexSQL);
+		stmt.execute();
+		indexSQL = "";
+		indexSQL += "CREATE OR REPLACE VIEW numbers AS ";
+		indexSQL += "SELECT (S1.single * 10 + S2.single) AS number ";
+		indexSQL += "FROM singles S1, singles S2 ";
+		indexSQL += "WHERE (S1.single + S2.single) >0 ";
+		indexSQL += "ORDER BY number ASC ;";
+		stmt = mySQLDB.prepareStatement(indexSQL);
+		stmt.execute();
+
+
+		searchSQL += "SELECT S.Agency, S.MID, NO.number AS SNum, S.Type, S.Energy, S.Duration, S.Capacity, S.Charge ";
+		searchSQL += "FROM Spacecraft_Model S, numbers NO ";
+		searchSQL += "WHERE S.Num>=NO.number "
+
 		
 		while (true) {
 			System.out.println();
@@ -349,23 +367,23 @@ public class CSCI3170Proj {
 		}
 		
 		if (answer.equals("1")) {
-			searchSQL += "WHERE S.Agency=?";
+			searchSQL += "AND S.Agency=?";
 			stmt = mySQLDB.prepareStatement(searchSQL);
 			stmt.setString(1,keyword);
 		} else if (answer.equals("2")) {
-			searchSQL += "WHERE S.Type=?";
+			searchSQL += "AND S.Type=?";
 			stmt = mySQLDB.prepareStatement(searchSQL);
 			stmt.setString(1,keyword);
 		} else if (answer.equals("3")) {
-			searchSQL += "WHERE S.Energy>?";
+			searchSQL += "AND S.Energy>?";
 			stmt = mySQLDB.prepareStatement(searchSQL);
 			stmt.setDouble(1,Double.parseDouble(keyword));
 		} else if (answer.equals("4")) {
-			searchSQL += "WHERE S.Duration>?";
+			searchSQL += "AND S.Duration>?";
 			stmt = mySQLDB.prepareStatement(searchSQL);
 			stmt.setInt(1,Integer.parseInt(keyword));
 		} else if (answer.equals("5")) {
-			searchSQL += "WHERE S.Capacity>?";
+			searchSQL += "AND S.Capacity>?";
 			stmt = mySQLDB.prepareStatement(searchSQL);
 			stmt.setInt(1,Integer.parseInt(keyword));
 		}
@@ -380,6 +398,11 @@ public class CSCI3170Proj {
 		}
 		System.out.println("End of Query");
 		resultSet.close();
+
+		String dropViewSQL = "";
+		dropViewSQL	+= "DROP VIEW IF EXISTS singles, numbers; ";
+		stmt = mySQLDB.prepareStatement(dropViewSQL);
+		stmt.execute();
 		stmt.close();
 	}
 
@@ -388,7 +411,7 @@ public class CSCI3170Proj {
 		//Testdata: FUCKSHIT not available in NEA list
 		//Testdata: 2008GD110 no resource
 		//Testdata: ??? very large Duration/Energy?
-		//For Duration/Energy, do we use > or >=? AGAIN not consistant in project.pdf (Here I used >= as stated in section 4.3)
+		//For Duration/Energy, I used >
 		String answer = "";
 		while (true){
 			System.out.print("Typing in the NEA ID:");
@@ -421,7 +444,7 @@ public class CSCI3170Proj {
 		smSQL += "SELECT S.Agency, S.MID, S.Num, (N.Duration*S.Charge) AS Cost, (1000000*R.Density*R.Value*S.Capacity-N.Duration*S.Charge) AS Benefit ";
 		smSQL += "FROM Resource R, NEA N, Spacecraft_Model S ";
 		smSQL += "WHERE R.RType=N.RType ";
-		smSQL += "AND S.Type='A' AND S.Energy>=N.Energy AND S.Duration>=N.Duration ";
+		smSQL += "AND S.Type='A' AND S.Energy>N.Energy AND S.Duration>N.Duration ";
 		smSQL += "AND N.NID=? ;";
 		stmt = mySQLDB.prepareStatement(smSQL);
 		stmt.setString(1,NID);
@@ -457,46 +480,7 @@ public class CSCI3170Proj {
 		stmt.execute();
 		stmt.close();
 
-		//OLD ALGO (NOT FINISHED):
-		//Double Density = 0;
-		//Double Value =0;
-		// PreparedStatement stmt = mySQLDB.prepareStatement("SELECT R.Density, R.Value from Resource R, NEA where NEA.RType=R.RType and NEA.NID=?;");		
-		// stmt.setString(1,NID);
-		// ResultSet rs = stmt.executeQuery();
-		// if (!rs.next()) {  //empty set returned
-		// 	System.out.print("[Error]: NEA not found or NEA has no resource."); 
-		// } else {
-		// 		Density=rs.getDouble(1);
-		// 		Value=rs.getDouble(2);
-		// 		String viewSQL = ""
-		// 		viewSQL += "CREATE VIEW goodSM AS SELECT SM.Agency, SM.MID, SM.Num, SM.Charge, SM.Capacity from Spacecraft_Model SM,NEA where SM.Type='A' and SM.Energy>NEA.Energy and SM.Duration>NEA.Duration and NEA.NID=?;"
-		// 		viewSQL += "CREATE VIEW goodS AS SELECT  SM.Agency, SM.MID, SM.Num, SM.Charge, SM.Capacity;"
-		// 		stmt = mySQLDB.prepareStatement();
-
-		// 		stmt.setString(1,NID);
-		// 		ResultSet rs = stmt.executeQuery();
-		// 		stmt = mySQLDB.prepareStatement("SELECT * FROM goodSM;")
-		// 		if (!rs.next()) {  //empty set returned
-		// 			System.out.print("[Error]: No Spacecraft is able to carry out the mission as NEA's Duration is too long or NEA's Energy is too high."); 
-		// 		} 
-		// 		else{
-					
-		// 			while(rs.next()){
-		// 				for (int i = 1; i<=8; i++){
-		// 					listOfStringArrays.add(new String[] {resultSet.getString(1),resultSet.getString(2),resultSet.getString(3),resultSet.getString(4),resultSet.getString(5)});
-		// 				}
 	
-		// 			}
-
-		// 			Collections.sort(listOfStringArrays,new Comparator<String[]>() {
-		// 				public int compare(String[] strings, String[] otherStrings) {
-		// 					return strings[1].compareTo(otherStrings[1]);
-		// 				}
-		// 			});
-
-		// 		}
-		// 	}
-		// }
 	}
 
 	public static void bestDesign(Scanner menuAns, Connection mySQLDB) throws SQLException {
@@ -538,7 +522,7 @@ public class CSCI3170Proj {
 		smSQL += "SELECT N.NID, N.Family, S.Agency, S.MID, S.Num, N.Duration, (N.Duration*S.Charge) AS Cost, (1000000*R.Density*R.Value*S.Capacity-N.Duration*S.Charge) AS Benefit ";
 		smSQL += "FROM Resource R, NEA N, Spacecraft_Model S ";
 		smSQL += "WHERE R.RType=N.RType ";
-		smSQL += "AND S.Type='A' AND S.Energy>=N.Energy AND S.Duration>=N.Duration ";
+		smSQL += "AND S.Type='A' AND S.Energy>N.Energy AND S.Duration>N.Duration ";
 		smSQL += "AND R.Rtype=? AND (N.Duration*S.Charge)<= ? ;";
 		stmt = mySQLDB.prepareStatement(smSQL);
 		stmt.setString(1,rtype);
