@@ -15,9 +15,9 @@ Add items if necessary
 |loadTables|✔||CY
 |showTables|✔||CY
 |neaSearch|✔||@ZR
-|spacecraftSearch|✔||@ZR
-|certainDesign|Doing||@ZR
-|bestDesign|Doing||CY
+|spacecraftSearch|TO_FIX||@ZR
+|certainDesign|✔||@ZR
+|bestDesign|✔||CY
 |rentSpacecraft|✔||CY
 |returnSpacecraft|✔||CY
 |listRentedByTime|✔||CY
