@@ -25,6 +25,7 @@ Add items if necessary
 # CHECK REQUIREMENT
 * Project requirement document;
 * Interface and spelling;
+* Time zone;
 # FULL TEST
 * Local Test;
 * Environment Test (Remote Linux Test);
