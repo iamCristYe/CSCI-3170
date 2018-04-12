@@ -4,16 +4,12 @@ import java.sql.*;
 import java.io.*;
 
 public class CSCI3170Proj {
-	//To test via SSH use mysql --host=projgw --port=2312 -u Group07 -p
-	public static String dbAddress = "jdbc:mysql://projgw.cse.cuhk.edu.hk:2312/db07";
-	public static String dbUsername = "Group07";
-	public static String dbPassword = "mogician";
-
 	public static Connection connectToOracle() {
 		Connection con = null;
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			con = DriverManager.getConnection(dbAddress, dbUsername, dbPassword);
+			con = DriverManager.getConnection("jdbc:mysql://projgw.cse.cuhk.edu.hk:2312/db07", "Group07", "mogician");
+			//To test via SSH use mysql --host=projgw --port=2312 -u Group07 -p
 		} catch (ClassNotFoundException e) {
 			System.out.println("[Error]: Java MySQL DB Driver not found!!");
 			System.exit(0);
@@ -24,23 +20,48 @@ public class CSCI3170Proj {
 		return con;
 	}
 
+	public static String remove0(String s) {
+		return s.indexOf(".") < 0 ? s : s.replaceAll("0*$", "").replaceAll("\\.$", "");
+	}
+
+	public static void createView100(Connection mySQLDB) throws SQLException {
+		String indexSQL = "";
+		//Create a view of int range[1,100], for converting spacecraft_model Num to spacecraft SNum
+		indexSQL += "CREATE OR REPLACE VIEW singles AS ";
+		indexSQL += "SELECT 0 single ";
+		indexSQL += "UNION ALL SELECT   1 UNION ALL SELECT   2 UNION ALL SELECT   3 ";
+		indexSQL += "UNION ALL SELECT   4 UNION ALL SELECT   5 UNION ALL SELECT   6 ";
+		indexSQL += "UNION ALL SELECT   7 UNION ALL SELECT   8 UNION ALL SELECT   9; ";
+		PreparedStatement stmt = mySQLDB.prepareStatement(indexSQL);
+		stmt.execute();
+		indexSQL = "";
+		indexSQL += "CREATE OR REPLACE VIEW numbers AS ";
+		indexSQL += "SELECT (S1.single * 10 + S2.single) AS number ";
+		indexSQL += "FROM singles S1, singles S2 ";
+		indexSQL += "WHERE (S1.single + S2.single) >0 ";
+		indexSQL += "ORDER BY number ASC ;";
+		stmt = mySQLDB.prepareStatement(indexSQL);
+		stmt.execute();
+		stmt.close();
+	}
+
 	public static void createTables(Connection mySQLDB) throws SQLException {
 		String Resource_SQL = "CREATE TABLE IF NOT EXISTS Resource (";
 		Resource_SQL += "RType VARCHAR(2) PRIMARY KEY NOT NULL,";
-		Resource_SQL += "Density DOUBLE NOT NULL,";
-		Resource_SQL += "Value DOUBLE NOT NULL)";
-		Resource_SQL += "COLLATE=latin1_general_cs";//for case sensitive
+		Resource_SQL += "Density DECIMAL(30,10) NOT NULL,";
+		Resource_SQL += "Value DECIMAL(30,10) NOT NULL)";
+		Resource_SQL += "COLLATE=utf8_bin";//for case sensitive
 
 		String NEA_SQL = "CREATE TABLE IF NOT EXISTS NEA (";
 		NEA_SQL += "NID VARCHAR(10) PRIMARY KEY NOT NULL,";
-		NEA_SQL += "Distance DOUBLE NOT NULL,";
+		NEA_SQL += "Distance DECIMAL(30,10) NOT NULL,";
 		NEA_SQL += "Family VARCHAR(6) NOT NULL,";
 		NEA_SQL += "Duration INT NOT NULL,";
-		NEA_SQL += "Energy DOUBLE NOT NULL,";
+		NEA_SQL += "Energy DECIMAL(30,10) NOT NULL,";
 		NEA_SQL += "RType VARCHAR(2),";
 		NEA_SQL += "FOREIGN KEY (RType) REFERENCES Resource(RType),";
 		NEA_SQL += "CHECK (Duration BETWEEN 100 AND 999))";
-		NEA_SQL += "COLLATE=latin1_general_cs";
+		NEA_SQL += "COLLATE=utf8_bin";
 
 		String Spacecraft_Model_SQL = "CREATE TABLE IF NOT EXISTS Spacecraft_Model (";
 		Spacecraft_Model_SQL += "Agency VARCHAR(4) NOT NULL,";
@@ -48,7 +69,7 @@ public class CSCI3170Proj {
 		Spacecraft_Model_SQL += "Num INT NOT NULL,";
 		Spacecraft_Model_SQL += "Charge INT NOT NULL,";
 		Spacecraft_Model_SQL += "Duration INT NOT NULL,";
-		Spacecraft_Model_SQL += "Energy DOUBLE NOT NULL,";
+		Spacecraft_Model_SQL += "Energy DECIMAL(30,10) NOT NULL,";
 		Spacecraft_Model_SQL += "Capacity INT,";
 		Spacecraft_Model_SQL += "Type VARCHAR(1) NOT NULL,";
 		Spacecraft_Model_SQL += "PRIMARY KEY (Agency, MID),";
@@ -56,7 +77,7 @@ public class CSCI3170Proj {
 		Spacecraft_Model_SQL += "CHECK (Charge BETWEEN 1 AND 99999),";
 		Spacecraft_Model_SQL += "CHECK (Capacity BETWEEN 1 AND 99),";
 		Spacecraft_Model_SQL += "CHECK (Duration BETWEEN 100 AND 999))";
-		Spacecraft_Model_SQL += "COLLATE=latin1_general_cs";
+		Spacecraft_Model_SQL += "COLLATE=utf8_bin";
 
 		String RentalRecord_SQL = "CREATE TABLE IF NOT EXISTS RentalRecord (";
 		RentalRecord_SQL += "Agency VARCHAR(4) NOT NULL,";
@@ -67,7 +88,7 @@ public class CSCI3170Proj {
 		RentalRecord_SQL += "PRIMARY KEY (Agency, MID, SNum),";
 		RentalRecord_SQL += "FOREIGN KEY (Agency, MID) REFERENCES Spacecraft_Model(Agency, MID),";
 		RentalRecord_SQL += "CHECK (SNum BETWEEN 1 AND 99))";
-		RentalRecord_SQL += "COLLATE=latin1_general_cs";
+		RentalRecord_SQL += "COLLATE=utf8_bin";
 
 		Statement stmt = mySQLDB.createStatement();
 		System.out.print("Processing...");
@@ -93,10 +114,6 @@ public class CSCI3170Proj {
 	}
 
 	public static void loadTables(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		//String Resource_SQL = "INSERT INTO Resource (RType, Density, Value) VALUES (?,?,?)";
-		//String NEA_SQL = "INSERT INTO NEA (NID, Distance, Family, Duration, Energy, RType) VALUES (?,?,?,?,?,?)";
-		//String Spacecraft_Model_SQL = "INSERT INTO Spacecraft_Model (Agency, MID, Num, Charge, Duration, Energy, Capacity, Type) VALUES (?,?,?,?,?,?,?,?)";
-		//String RentalRecord_SQL = "INSERT INTO RentalRecord (Agency, MID, SNum, CheckoutDate, ReturnDate) VALUES (?,?,?,STR_TO_DATE(?,'%d-%m-%Y'),STR_TO_DATE(?,'%d-%m-%Y'))";
 
 		String filePath = "";
 		while (true) {
@@ -227,7 +244,7 @@ public class CSCI3170Proj {
 		}
 	}
 
-	public static void adminMenu(Scanner menuAns, Connection mySQLDB) throws SQLException {//done
+	public static void adminMenu(Scanner menuAns, Connection mySQLDB) throws SQLException {
 		String answer = "";
 
 		while (true) {
@@ -305,10 +322,10 @@ public class CSCI3170Proj {
 		ResultSet resultSet = stmt.executeQuery();
 		while (resultSet.next()) {
 			System.out.print("|" + String.format("%1$10s", resultSet.getString(1)));
-			System.out.print("|" + String.format("%1$8s", resultSet.getString(2)));
+			System.out.print("|" + String.format("%1$8s", remove0(resultSet.getString(2))));
 			System.out.print("|" + String.format("%1$6s", resultSet.getString(3)));
 			System.out.print("|" + String.format("%1$8s", resultSet.getString(4)));
-			System.out.print("|" + String.format("%1$6s", resultSet.getString(5)));
+			System.out.print("|" + String.format("%1$6s", remove0(resultSet.getString(5))));
 			System.out.print("|" + String.format("%1$9s", resultSet.getString(6)));
 			System.out.println("|");
 		}
@@ -322,26 +339,8 @@ public class CSCI3170Proj {
 		String answer = "";
 		String keyword = "";
 		String searchSQL = "";
-		PreparedStatement stmt = null;
 
-		String indexSQL = "";
-		//Create a view of int range(1,100), for converting spacecraft_model Num to spacecraft SNum
-		indexSQL += "CREATE OR REPLACE VIEW singles AS ";
-		indexSQL += "SELECT 0 single ";
-		indexSQL += "UNION ALL SELECT   1 UNION ALL SELECT   2 UNION ALL SELECT   3 ";
-		indexSQL += "UNION ALL SELECT   4 UNION ALL SELECT   5 UNION ALL SELECT   6 ";
-		indexSQL += "UNION ALL SELECT   7 UNION ALL SELECT   8 UNION ALL SELECT   9; ";
-		stmt = mySQLDB.prepareStatement(indexSQL);
-		stmt.execute();
-		indexSQL = "";
-		indexSQL += "CREATE OR REPLACE VIEW numbers AS ";
-		indexSQL += "SELECT (S1.single * 10 + S2.single) AS number ";
-		indexSQL += "FROM singles S1, singles S2 ";
-		indexSQL += "WHERE (S1.single + S2.single) >0 ";
-		indexSQL += "ORDER BY number ASC ;";
-		stmt = mySQLDB.prepareStatement(indexSQL);
-		stmt.execute();
-
+		createView100(mySQLDB);
 		searchSQL += "SELECT S.Agency, S.MID, NO.number AS SNum, S.Type, S.Energy, S.Duration, S.Capacity, S.Charge ";
 		searchSQL += "FROM Spacecraft_Model S, numbers NO ";
 		searchSQL += "WHERE S.Num>=NO.number ";
@@ -372,26 +371,17 @@ public class CSCI3170Proj {
 		}
 
 		if (answer.equals("1")) {
-			searchSQL += "AND S.Agency=?";
-			stmt = mySQLDB.prepareStatement(searchSQL);
-			stmt.setString(1, keyword);
+			searchSQL += "AND S.Agency='" + keyword + "'";
 		} else if (answer.equals("2")) {
-			searchSQL += "AND S.Type=?";
-			stmt = mySQLDB.prepareStatement(searchSQL);
-			stmt.setString(1, keyword);
+			searchSQL += "AND S.Type='" + keyword + "'";
 		} else if (answer.equals("3")) {
-			searchSQL += "AND S.Energy>?";
-			stmt = mySQLDB.prepareStatement(searchSQL);
-			stmt.setDouble(1, Double.parseDouble(keyword));
+			searchSQL += "AND S.Energy>" + keyword;
 		} else if (answer.equals("4")) {
-			searchSQL += "AND S.Duration>?";
-			stmt = mySQLDB.prepareStatement(searchSQL);
-			stmt.setInt(1, Integer.parseInt(keyword));
+			searchSQL += "AND S.Duration>" + keyword;
 		} else if (answer.equals("5")) {
-			searchSQL += "AND S.Capacity>?";
-			stmt = mySQLDB.prepareStatement(searchSQL);
-			stmt.setInt(1, Integer.parseInt(keyword));
+			searchSQL += "AND S.Capacity>" + keyword;
 		}
+		PreparedStatement stmt = mySQLDB.prepareStatement(searchSQL);
 		System.out.println();
 		System.out.println("|Agency| MID|SNum|Type|Energy|  T|Capacity|Charge|");
 		ResultSet resultSet = stmt.executeQuery();
@@ -401,7 +391,7 @@ public class CSCI3170Proj {
 				System.out.print("|" + String.format("%1$4s", resultSet.getString(2)));
 				System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));
 				System.out.print("|" + String.format("%1$4s", resultSet.getString(4)));
-				System.out.print("|" + String.format("%1$6s", resultSet.getString(5)));
+				System.out.print("|" + String.format("%1$6s", remove0(resultSet.getString(5))));
 				System.out.print("|" + String.format("%1$3s", resultSet.getString(6)));
 				System.out.print("|" + String.format("%1$8s", resultSet.getString(7)));
 				System.out.print("|" + String.format("%1$6s", resultSet.getString(8)));
@@ -432,23 +422,7 @@ public class CSCI3170Proj {
 		}
 		String NID = answer;
 
-		String indexSQL = "";
-		//Create a view of int range(1,100), for converting spacecraft_model Num to spacecraft SNum
-		indexSQL += "CREATE OR REPLACE VIEW singles AS ";
-		indexSQL += "SELECT 0 single ";
-		indexSQL += "UNION ALL SELECT   1 UNION ALL SELECT   2 UNION ALL SELECT   3 ";
-		indexSQL += "UNION ALL SELECT   4 UNION ALL SELECT   5 UNION ALL SELECT   6 ";
-		indexSQL += "UNION ALL SELECT   7 UNION ALL SELECT   8 UNION ALL SELECT   9; ";
-		PreparedStatement stmt = mySQLDB.prepareStatement(indexSQL);
-		stmt.execute();
-		indexSQL = "";
-		indexSQL += "CREATE OR REPLACE VIEW numbers AS ";
-		indexSQL += "SELECT (S1.single * 10 + S2.single) AS number ";
-		indexSQL += "FROM singles S1, singles S2 ";
-		indexSQL += "WHERE (S1.single + S2.single) >0 ";
-		indexSQL += "ORDER BY number ASC ;";
-		stmt = mySQLDB.prepareStatement(indexSQL);
-		stmt.execute();
+		createView100(mySQLDB);
 
 		String smSQL = "";
 		//Create a view of Spacecraft Models that are capable to do the job
@@ -458,7 +432,7 @@ public class CSCI3170Proj {
 		smSQL += "WHERE R.RType=N.RType ";
 		smSQL += "AND S.Type='A' AND S.Energy>N.Energy AND S.Duration>N.Duration ";
 		smSQL += "AND N.NID=? ;";
-		stmt = mySQLDB.prepareStatement(smSQL);
+		PreparedStatement stmt = mySQLDB.prepareStatement(smSQL);
 		stmt.setString(1, NID);
 		stmt.execute();
 
@@ -483,7 +457,7 @@ public class CSCI3170Proj {
 			System.out.print("|" + String.format("%1$4s", resultSet.getString(2)));
 			System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));
 			System.out.print("|" + String.format("%1$8s", resultSet.getString(4)));
-			System.out.print("|" + String.format("%1$20s", resultSet.getString(5)));
+			System.out.print("|" + String.format("%1$20s", remove0(resultSet.getString(5))));
 			System.out.println("|");
 		}
 		System.out.println("End of Query");
@@ -514,23 +488,7 @@ public class CSCI3170Proj {
 		}
 		String rtype = answer;
 
-		String indexSQL = "";
-		//Create a view of int range(1,100), for converting spacecraft_model Num to spacecraft SNum
-		indexSQL += "CREATE OR REPLACE VIEW singles AS ";
-		indexSQL += "SELECT 0 single ";
-		indexSQL += "UNION ALL SELECT   1 UNION ALL SELECT   2 UNION ALL SELECT   3 ";
-		indexSQL += "UNION ALL SELECT   4 UNION ALL SELECT   5 UNION ALL SELECT   6 ";
-		indexSQL += "UNION ALL SELECT   7 UNION ALL SELECT   8 UNION ALL SELECT   9; ";
-		PreparedStatement stmt = mySQLDB.prepareStatement(indexSQL);
-		stmt.execute();
-		indexSQL = "";
-		indexSQL += "CREATE OR REPLACE VIEW numbers AS ";
-		indexSQL += "SELECT (S1.single * 10 + S2.single) AS number ";
-		indexSQL += "FROM singles S1, singles S2 ";
-		indexSQL += "WHERE (S1.single + S2.single) >0 ";
-		indexSQL += "ORDER BY number ASC ;";
-		stmt = mySQLDB.prepareStatement(indexSQL);
-		stmt.execute();
+		createView100(mySQLDB);
 
 		String smSQL = "";
 		//Create a view of Spacecraft Models that are capable to do the job
@@ -540,7 +498,7 @@ public class CSCI3170Proj {
 		smSQL += "WHERE R.RType=N.RType ";
 		smSQL += "AND S.Type='A' AND S.Energy>N.Energy AND S.Duration>N.Duration ";
 		smSQL += "AND R.Rtype=? AND (N.Duration*S.Charge)<= ? ;";
-		stmt = mySQLDB.prepareStatement(smSQL);
+		PreparedStatement stmt = mySQLDB.prepareStatement(smSQL);
 		stmt.setString(1, rtype);
 		stmt.setInt(2, budget);
 		stmt.execute();
@@ -569,7 +527,7 @@ public class CSCI3170Proj {
 			System.out.print("|" + String.format("%1$4s", resultSet.getString(5)));
 			System.out.print("|" + String.format("%1$8s", resultSet.getString(6)));
 			System.out.print("|" + String.format("%1$8s", resultSet.getString(7)));
-			System.out.print("|" + String.format("%1$20s", resultSet.getString(8)));
+			System.out.print("|" + String.format("%1$20s", remove0(resultSet.getString(8))));
 			System.out.println("|");
 		} else {//empty result
 			System.out.println("No result available");//DO I need to output this? PS:this should not be regarded as an "ERROR"
@@ -585,13 +543,12 @@ public class CSCI3170Proj {
 		stmt.close();
 	}
 
-	public static void customerMenu(Scanner menuAns, Connection mySQLDB) throws SQLException {//done
+	public static void customerMenu(Scanner menuAns, Connection mySQLDB) throws SQLException {
 		String answer = "";
 
 		while (true) {
 			System.out.println();
 			System.out.println("-----Operations for exploration companies (rental customers)-----");
-			//System.out.println("What kinds of operation would you like to perform?");
 			System.out.println("1. Search for NEAs based on some criteria");
 			System.out.println("2. Search for spacecrafts based on some criteria");
 			System.out.println("3. A certain NEA exploration mission design");
@@ -675,6 +632,7 @@ public class CSCI3170Proj {
 		//Testdata: RSA 0198 9 SNum > Num
 		//Testdata: RSA 0292 5 returned
 		//Testdata: RSA 0292 6 unreturned
+		//Testdata: RSA 0023 1 once rented but now returned
 
 		System.out.print("Enter the space agency name:");
 		String agency = menuAns.nextLine();
@@ -709,7 +667,6 @@ public class CSCI3170Proj {
 				java.util.Date utilDate = new java.util.Date();
 				java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
 				stmt.setDate(4, sqlDate);
-				stmt.setNull(5, java.sql.Types.DATE);
 				stmt.executeUpdate();
 				System.out.print("Spacecraft returned successfully!");
 			} else {
@@ -723,7 +680,7 @@ public class CSCI3170Proj {
 
 	public static void listRentedByTime(Scanner menuAns, Connection mySQLDB) throws SQLException {
 		PreparedStatement stmt = mySQLDB.prepareStatement(
-				"SELECT RR.Agency, RR.MID, RR.SNum, RR.CheckoutDate FROM RentalRecord RR where RR.CheckoutDate>=STR_TO_DATE(?,'%d-%m-%Y') and RR.CheckoutDate<=STR_TO_DATE(?,'%d-%m-%Y') order by CheckoutDate desc ");
+				"SELECT RR.Agency, RR.MID, RR.SNum, RR.CheckoutDate FROM RentalRecord RR where RR.CheckoutDate>=STR_TO_DATE(?,'%d-%m-%Y') and RR.CheckoutDate<=STR_TO_DATE(?,'%d-%m-%Y') and RR.ReturnDate is null order by CheckoutDate desc ");
 
 		System.out.println();
 		System.out.print("Typing in the starting date [DD-MM-YYYY]:");
@@ -731,7 +688,7 @@ public class CSCI3170Proj {
 		System.out.print("Typing in the ending date [DD-MM-YYYY]:");
 		stmt.setString(2, menuAns.nextLine());
 
-		System.out.println("List of the unrented spacecraft:");
+		System.out.println("List of the unreturned spacecraft:");
 		System.out.println("|Agency| MID|SNum|Checkout Date|");
 		ResultSet resultSet = stmt.executeQuery();
 		while (resultSet.next()) {
