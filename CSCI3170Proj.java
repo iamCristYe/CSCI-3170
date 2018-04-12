@@ -4,12 +4,11 @@ import java.sql.*;
 import java.io.*;
 
 public class CSCI3170Proj {
-
+	//To test via SSH use mysql --host=projgw --port=2312 -u Group07 -p
 	public static String dbAddress = "jdbc:mysql://projgw.cse.cuhk.edu.hk:2312/db07";
 	public static String dbUsername = "Group07";
 	public static String dbPassword = "mogician";
-	// mysql --host=projgw --port=2312 -u Group07 -p
-	
+
 	public static Connection connectToOracle() {
 		Connection con = null;
 		try {
@@ -42,7 +41,6 @@ public class CSCI3170Proj {
 		NEA_SQL += "FOREIGN KEY (RType) REFERENCES Resource(RType),";
 		NEA_SQL += "CHECK (Duration BETWEEN 100 AND 999))";
 		NEA_SQL += "COLLATE=latin1_general_cs";
-
 
 		String Spacecraft_Model_SQL = "CREATE TABLE IF NOT EXISTS Spacecraft_Model (";
 		Spacecraft_Model_SQL += "Agency VARCHAR(4) NOT NULL,";
@@ -111,7 +109,8 @@ public class CSCI3170Proj {
 
 		System.out.print("Processing...");
 		try {
-			PreparedStatement stmt = mySQLDB.prepareStatement("INSERT INTO Resource (RType, Density, Value) VALUES (?,?,?)");
+			PreparedStatement stmt = mySQLDB
+					.prepareStatement("INSERT INTO Resource (RType, Density, Value) VALUES (?,?,?)");
 			String line = null;
 			BufferedReader dataReader = new BufferedReader(new FileReader(filePath + "/resources.txt"));
 			dataReader.readLine(); //skip the first line which is not data
@@ -130,7 +129,8 @@ public class CSCI3170Proj {
 		}
 
 		try {
-			PreparedStatement stmt = mySQLDB.prepareStatement("INSERT INTO NEA (NID, Distance, Family, Duration, Energy, RType) VALUES (?,?,?,?,?,?)");
+			PreparedStatement stmt = mySQLDB.prepareStatement(
+					"INSERT INTO NEA (NID, Distance, Family, Duration, Energy, RType) VALUES (?,?,?,?,?,?)");
 			String line = null;
 			BufferedReader dataReader = new BufferedReader(new FileReader(filePath + "/neas.txt"));
 			dataReader.readLine();
@@ -155,24 +155,25 @@ public class CSCI3170Proj {
 		}
 
 		try {
-			PreparedStatement stmt = mySQLDB.prepareStatement("INSERT INTO Spacecraft_Model (Agency, MID, Num, Charge, Duration, Energy, Capacity, Type) VALUES (?,?,?,?,?,?,?,?)");
+			PreparedStatement stmt = mySQLDB.prepareStatement(
+					"INSERT INTO Spacecraft_Model (Agency, MID, Num, Charge, Duration, Energy, Capacity, Type) VALUES (?,?,?,?,?,?,?,?)");
 
 			String line = null;
 			BufferedReader dataReader = new BufferedReader(new FileReader(filePath + "/spacecrafts.txt"));
 			dataReader.readLine();
 			while ((line = dataReader.readLine()) != null) {
 				String[] dataFields = line.split("\t");
-				stmt.setString(1, dataFields[0]);						//Agency
-				stmt.setString(2, dataFields[1]);						//MID
-				stmt.setInt(3, Integer.parseInt(dataFields[2]));		//Num
-				stmt.setInt(4, Integer.parseInt(dataFields[7]));		//Charge
-				stmt.setInt(5, Integer.parseInt(dataFields[5]));		//Duration
-				stmt.setDouble(6, Double.parseDouble(dataFields[4]));	//Energy
+				stmt.setString(1, dataFields[0]); //Agency
+				stmt.setString(2, dataFields[1]); //MID
+				stmt.setInt(3, Integer.parseInt(dataFields[2])); //Num
+				stmt.setInt(4, Integer.parseInt(dataFields[7])); //Charge
+				stmt.setInt(5, Integer.parseInt(dataFields[5])); //Duration
+				stmt.setDouble(6, Double.parseDouble(dataFields[4])); //Energy
 				if (dataFields[6].equals("null"))
 					stmt.setNull(7, java.sql.Types.INTEGER);
 				else
-					stmt.setInt(7, Integer.parseInt(dataFields[6]));	//Capacity
-				stmt.setString(8, dataFields[3]);						//Type
+					stmt.setInt(7, Integer.parseInt(dataFields[6])); //Capacity
+				stmt.setString(8, dataFields[3]); //Type
 				stmt.addBatch();
 			}
 
@@ -184,7 +185,8 @@ public class CSCI3170Proj {
 		}
 
 		try {
-			PreparedStatement stmt = mySQLDB.prepareStatement("INSERT INTO RentalRecord (Agency, MID, SNum, CheckoutDate, ReturnDate) VALUES (?,?,?,STR_TO_DATE(?,'%d-%m-%Y'),STR_TO_DATE(?,'%d-%m-%Y'))");
+			PreparedStatement stmt = mySQLDB.prepareStatement(
+					"INSERT INTO RentalRecord (Agency, MID, SNum, CheckoutDate, ReturnDate) VALUES (?,?,?,STR_TO_DATE(?,'%d-%m-%Y'),STR_TO_DATE(?,'%d-%m-%Y'))");
 			String line = null;
 			BufferedReader dataReader = new BufferedReader(new FileReader(filePath + "/rentalrecords.txt"));
 			dataReader.readLine();
@@ -280,14 +282,15 @@ public class CSCI3170Proj {
 			}
 		}
 
-		while (true){
-			System.out.print("Type in the search keyword");
+		while (true) {
+			System.out.print("Type in the search keyword:");
 			keyword = menuAns.nextLine();
-			if (!keyword.isEmpty()) break;
+			if (!keyword.isEmpty())
+				break;
 		}
-		
+
 		if (method.equals("1")) {
-			searchSQL += "WHERE N.NID='" + keyword +"'";
+			searchSQL += "WHERE N.NID='" + keyword + "'";
 		} else if (method.equals("2")) {
 			searchSQL += "WHERE N.Family LIKE '%" + keyword + "%'";
 		} else if (method.equals("3")) {
@@ -295,14 +298,18 @@ public class CSCI3170Proj {
 		}
 
 		stmt = mySQLDB.prepareStatement(searchSQL);
-		
-		System.out.println("|ID|Distance|Family|Duration|Energy|Resources|");
-	
+
+		System.out.println();
+		System.out.println("|        ID|Distance|Family|Duration|Energy|Resources|");
+
 		ResultSet resultSet = stmt.executeQuery();
-		while(resultSet.next()){
-			for (int i = 1; i<=6; i++){
-				System.out.print("|" + resultSet.getString(i));
-			}
+		while (resultSet.next()) {
+			System.out.print("|" + String.format("%1$10s", resultSet.getString(1)));
+			System.out.print("|" + String.format("%1$8s", resultSet.getString(2)));
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(3)));
+			System.out.print("|" + String.format("%1$8s", resultSet.getString(4)));
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(5)));
+			System.out.print("|" + String.format("%1$9s", resultSet.getString(6)));
 			System.out.println("|");
 		}
 		System.out.println("End of Query");
@@ -311,7 +318,6 @@ public class CSCI3170Proj {
 	}
 
 	public static void spacecraftSearch(Scanner menuAns, Connection mySQLDB) throws SQLException {
-
 
 		String answer = "";
 		String keyword = "";
@@ -336,12 +342,10 @@ public class CSCI3170Proj {
 		stmt = mySQLDB.prepareStatement(indexSQL);
 		stmt.execute();
 
-
 		searchSQL += "SELECT S.Agency, S.MID, NO.number AS SNum, S.Type, S.Energy, S.Duration, S.Capacity, S.Charge ";
 		searchSQL += "FROM Spacecraft_Model S, numbers NO ";
-		searchSQL += "WHERE S.Num>=NO.number "
+		searchSQL += "WHERE S.Num>=NO.number ";
 
-		
 		while (true) {
 			System.out.println();
 			System.out.println("Choose the search criterion:");
@@ -360,39 +364,47 @@ public class CSCI3170Proj {
 			}
 		}
 
-		while (true){
-			System.out.print("Type in the search keyword");
+		while (true) {
+			System.out.print("Type in the search keyword:");
 			keyword = menuAns.nextLine();
-			if (!keyword.isEmpty()) break;
+			if (!keyword.isEmpty())
+				break;
 		}
-		
+
 		if (answer.equals("1")) {
 			searchSQL += "AND S.Agency=?";
 			stmt = mySQLDB.prepareStatement(searchSQL);
-			stmt.setString(1,keyword);
+			stmt.setString(1, keyword);
 		} else if (answer.equals("2")) {
 			searchSQL += "AND S.Type=?";
 			stmt = mySQLDB.prepareStatement(searchSQL);
-			stmt.setString(1,keyword);
+			stmt.setString(1, keyword);
 		} else if (answer.equals("3")) {
 			searchSQL += "AND S.Energy>?";
 			stmt = mySQLDB.prepareStatement(searchSQL);
-			stmt.setDouble(1,Double.parseDouble(keyword));
+			stmt.setDouble(1, Double.parseDouble(keyword));
 		} else if (answer.equals("4")) {
 			searchSQL += "AND S.Duration>?";
 			stmt = mySQLDB.prepareStatement(searchSQL);
-			stmt.setInt(1,Integer.parseInt(keyword));
+			stmt.setInt(1, Integer.parseInt(keyword));
 		} else if (answer.equals("5")) {
 			searchSQL += "AND S.Capacity>?";
 			stmt = mySQLDB.prepareStatement(searchSQL);
-			stmt.setInt(1,Integer.parseInt(keyword));
+			stmt.setInt(1, Integer.parseInt(keyword));
 		}
-		
-		System.out.println("|Agency|MID|SNum|Type|Energy|T|Capacity|Charge|");
+		System.out.println();
+		System.out.println("|Agency| MID|SNum|Type|Energy|  T|Capacity|Charge|");
 		ResultSet resultSet = stmt.executeQuery();
-		while(resultSet.next()){
-			for (int i = 1; i<=8; i++){
-				System.out.print("|" + resultSet.getString(i));
+		while (resultSet.next()) {
+			for (int i = 1; i <= 8; i++) {
+				System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));
+				System.out.print("|" + String.format("%1$4s", resultSet.getString(2)));
+				System.out.print("|" + String.format("%1$3s", resultSet.getString(3)));
+				System.out.print("|" + String.format("%1$4s", resultSet.getString(4)));
+				System.out.print("|" + String.format("%1$6s", resultSet.getString(5)));
+				System.out.print("|" + String.format("%1$3s", resultSet.getString(6)));
+				System.out.print("|" + String.format("%1$8s", resultSet.getString(7)));
+				System.out.print("|" + String.format("%1$6s", resultSet.getString(8)));
 			}
 			System.out.println("|");
 		}
@@ -400,23 +412,23 @@ public class CSCI3170Proj {
 		resultSet.close();
 
 		String dropViewSQL = "";
-		dropViewSQL	+= "DROP VIEW IF EXISTS singles, numbers; ";
+		dropViewSQL += "DROP VIEW IF EXISTS singles, numbers; ";
 		stmt = mySQLDB.prepareStatement(dropViewSQL);
 		stmt.execute();
 		stmt.close();
 	}
 
 	public static void certainDesign(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		//TODO
 		//Testdata: FUCKSHIT not available in NEA list
 		//Testdata: 2008GD110 no resource
 		//Testdata: ??? very large Duration/Energy?
-		//For Duration/Energy, I used >
+		//For Duration/Energy, I used > instead of >=
 		String answer = "";
-		while (true){
+		while (true) {
 			System.out.print("Typing in the NEA ID:");
 			answer = menuAns.nextLine();
-			if (!answer.isEmpty()) break;
+			if (!answer.isEmpty())
+				break;
 		}
 		String NID = answer;
 
@@ -447,7 +459,7 @@ public class CSCI3170Proj {
 		smSQL += "AND S.Type='A' AND S.Energy>N.Energy AND S.Duration>N.Duration ";
 		smSQL += "AND N.NID=? ;";
 		stmt = mySQLDB.prepareStatement(smSQL);
-		stmt.setString(1,NID);
+		stmt.setString(1, NID);
 		stmt.execute();
 
 		String spacecraftSQL = "";
@@ -462,39 +474,43 @@ public class CSCI3170Proj {
 		spacecraftSQL += "    WHERE D.ReturnDate IS NULL) ";
 		spacecraftSQL += "ORDER BY M.Benefit DESC, SNum ASC; ";
 		stmt = mySQLDB.prepareStatement(spacecraftSQL);
-		
-		System.out.println("|Agency|MID|SNum|Cost|Benefit|");
+
+		System.out.println();
+		System.out.println("|Agency| MID|SNum|    Cost|             Benefit|");
 		ResultSet resultSet = stmt.executeQuery();
-		while(resultSet.next()){
-			for (int i = 1; i<=5; i++){
-				System.out.print("|" + resultSet.getString(i));
-			}
+		while (resultSet.next()) {
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(2)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));
+			System.out.print("|" + String.format("%1$8s", resultSet.getString(4)));
+			System.out.print("|" + String.format("%1$20s", resultSet.getString(5)));
 			System.out.println("|");
 		}
 		System.out.println("End of Query");
 		resultSet.close();
 
 		String dropViewSQL = "";
-		dropViewSQL	+= "DROP VIEW IF EXISTS singles, numbers, models; ";
+		dropViewSQL += "DROP VIEW IF EXISTS singles, numbers, models; ";
 		stmt = mySQLDB.prepareStatement(dropViewSQL);
 		stmt.execute();
 		stmt.close();
 
-	
 	}
 
 	public static void bestDesign(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		String answer = ""; 
-		while (true){
+		String answer = "";
+		while (true) {
 			System.out.print("Typing in your budget [$]: ");
 			answer = menuAns.nextLine();
-			if (!answer.isEmpty()) break;
+			if (!answer.isEmpty())
+				break;
 		}
 		int budget = Integer.parseInt(answer);
-		while (true){
+		while (true) {
 			System.out.print("Typing in the resource type: ");
 			answer = menuAns.nextLine();
-			if (!answer.isEmpty()) break;
+			if (!answer.isEmpty())
+				break;
 		}
 		String rtype = answer;
 
@@ -525,8 +541,8 @@ public class CSCI3170Proj {
 		smSQL += "AND S.Type='A' AND S.Energy>N.Energy AND S.Duration>N.Duration ";
 		smSQL += "AND R.Rtype=? AND (N.Duration*S.Charge)<= ? ;";
 		stmt = mySQLDB.prepareStatement(smSQL);
-		stmt.setString(1,rtype);
-		stmt.setInt(2,budget);
+		stmt.setString(1, rtype);
+		stmt.setInt(2, budget);
 		stmt.execute();
 
 		String spacecraftSQL = "";
@@ -542,23 +558,28 @@ public class CSCI3170Proj {
 		spacecraftSQL += "ORDER BY M.Benefit DESC, SNum ASC; ";
 		stmt = mySQLDB.prepareStatement(spacecraftSQL);
 
-		System.out.println("|NEA ID|Family|Agency|MID|SNum|Duration|Cost|Benefit|");
+		System.out.println();
+		System.out.println("|    NEA ID|Family|Agency| MID|SNum|Duration|    Cost|             Benefit|");
 		ResultSet resultSet = stmt.executeQuery();
-		if (resultSet.next()){//We print only the first line, if exists
-			for (int i = 1; i<=8; i++){
-				System.out.print("|" + resultSet.getString(i));
-			}
+		if (resultSet.next()) {//We print only the first line, if exists
+			System.out.print("|" + String.format("%1$10s", resultSet.getString(1)));
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(2)));
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(3)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(4)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(5)));
+			System.out.print("|" + String.format("%1$8s", resultSet.getString(6)));
+			System.out.print("|" + String.format("%1$8s", resultSet.getString(7)));
+			System.out.print("|" + String.format("%1$20s", resultSet.getString(8)));
 			System.out.println("|");
-		}else{//empty result
+		} else {//empty result
 			System.out.println("No result available");//DO I need to output this? PS:this should not be regarded as an "ERROR"
 		}
 
 		System.out.println("End of Query");
 		resultSet.close();
 
-
 		String dropViewSQL = "";
-		dropViewSQL	+= "DROP VIEW IF EXISTS singles, numbers, models; ";
+		dropViewSQL += "DROP VIEW IF EXISTS singles, numbers, models; ";
 		stmt = mySQLDB.prepareStatement(dropViewSQL);
 		stmt.execute();
 		stmt.close();
@@ -603,37 +624,39 @@ public class CSCI3170Proj {
 		//Testdata: RSA 0219 2 unable to find in RentalRecord (need add entry)
 
 		System.out.print("Enter the space agency name:");
-		String agency=menuAns.nextLine(); 
+		String agency = menuAns.nextLine();
 		System.out.print("Enter the MID:");
-		String mid=menuAns.nextLine(); 
+		String mid = menuAns.nextLine();
 		System.out.print("Enter the SNum:");
-		int snum=Integer.parseInt(menuAns.nextLine()); 
+		int snum = Integer.parseInt(menuAns.nextLine());
 
-		PreparedStatement stmt = mySQLDB.prepareStatement("select SM.Num from Spacecraft_Model SM where SM.Agency = ? AND SM.MID= ?");
+		PreparedStatement stmt = mySQLDB
+				.prepareStatement("select SM.Num from Spacecraft_Model SM where SM.Agency = ? AND SM.MID= ?");
 		stmt.setString(1, agency);
 		stmt.setString(2, mid);
 		ResultSet rs = stmt.executeQuery();
 		if (!rs.next()) {
 			System.out.print("[Error]: Rental not possible because the spacecraft is not found."); //not available in spacecraft list
-		} else if (snum>Integer.parseInt(rs.getString(1))) {
+		} else if (snum > Integer.parseInt(rs.getString(1))) {
 			System.out.print("[Error]: Rental not possible because the spacecraft is not found."); //SNum > Num
-		}
-		else {
-			stmt = mySQLDB.prepareStatement("select RR.ReturnDate from RentalRecord RR where RR.Agency = ? AND RR.MID= ? AND RR.SNum =?");
+		} else {
+			stmt = mySQLDB.prepareStatement(
+					"select RR.ReturnDate from RentalRecord RR where RR.Agency = ? AND RR.MID= ? AND RR.SNum =?");
 			stmt.setString(1, agency);
 			stmt.setString(2, mid);
 			stmt.setInt(3, snum);
 			rs = stmt.executeQuery();
-			
-			if (rs.next()&&rs.getString(1)==null ){//unreturned
+
+			if (rs.next() && rs.getString(1) == null) {//unreturned
 				System.out.print("[Error]: Rental not possible because the spacecraft has not yet been returned.");
 			} else {
-				stmt = mySQLDB.prepareStatement("INSERT INTO RentalRecord (Agency, MID, SNum,CheckoutDate,ReturnDate) VALUES(?, ?, ?,?,?) ON DUPLICATE KEY UPDATE CheckoutDate=?, ReturnDate=?");
+				stmt = mySQLDB.prepareStatement(
+						"INSERT INTO RentalRecord (Agency, MID, SNum,CheckoutDate,ReturnDate) VALUES(?, ?, ?,?,?) ON DUPLICATE KEY UPDATE CheckoutDate=?, ReturnDate=?");
 				stmt.setString(1, agency);
 				stmt.setString(2, mid);
 				stmt.setInt(3, snum);
 				java.util.Date utilDate = new java.util.Date();
-   				java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+				java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
 				stmt.setDate(4, sqlDate);
 				stmt.setNull(5, java.sql.Types.DATE);
 				stmt.setDate(6, sqlDate);
@@ -652,43 +675,45 @@ public class CSCI3170Proj {
 		//Testdata: RSA 0198 9 SNum > Num
 		//Testdata: RSA 0292 5 returned
 		//Testdata: RSA 0292 6 unreturned
-		
-		System.out.print("Enter the space agency name:");
-		String agency=menuAns.nextLine(); 
-		System.out.print("Enter the MID:");
-		String mid=menuAns.nextLine(); 
-		System.out.print("Enter the SNum:");
-		int snum=Integer.parseInt(menuAns.nextLine()); 
 
-		PreparedStatement stmt = mySQLDB.prepareStatement("select SM.Num from Spacecraft_Model SM where SM.Agency = ? AND SM.MID= ?");
+		System.out.print("Enter the space agency name:");
+		String agency = menuAns.nextLine();
+		System.out.print("Enter the MID:");
+		String mid = menuAns.nextLine();
+		System.out.print("Enter the SNum:");
+		int snum = Integer.parseInt(menuAns.nextLine());
+
+		PreparedStatement stmt = mySQLDB
+				.prepareStatement("select SM.Num from Spacecraft_Model SM where SM.Agency = ? AND SM.MID= ?");
 		stmt.setString(1, agency);
 		stmt.setString(2, mid);
 		ResultSet rs = stmt.executeQuery();
 		if (!rs.next()) {
 			System.out.print("[Error]: Return not possible because the spacecraft is not found."); //not available in spacecraft list
-		} else if (snum>Integer.parseInt(rs.getString(1))) {
+		} else if (snum > Integer.parseInt(rs.getString(1))) {
 			System.out.print("[Error]: Return not possible because the spacecraft is not found."); //SNum > Num
-		}
-		else {
-			stmt = mySQLDB.prepareStatement("select RR.ReturnDate from RentalRecord RR where RR.Agency = ? AND RR.MID= ? AND RR.SNum =?");
+		} else {
+			stmt = mySQLDB.prepareStatement(
+					"select RR.ReturnDate from RentalRecord RR where RR.Agency = ? AND RR.MID= ? AND RR.SNum =?");
 			stmt.setString(1, agency);
 			stmt.setString(2, mid);
 			stmt.setInt(3, snum);
 			rs = stmt.executeQuery();
-			
-			if (rs.next()&&rs.getString(1)==null ){//unreturned
-				stmt = mySQLDB.prepareStatement("INSERT INTO RentalRecord (Agency, MID, SNum) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE ReturnDate=?");
+
+			if (rs.next() && rs.getString(1) == null) {//unreturned
+				stmt = mySQLDB.prepareStatement(
+						"INSERT INTO RentalRecord (Agency, MID, SNum) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE ReturnDate=?");
 				stmt.setString(1, agency);
 				stmt.setString(2, mid);
 				stmt.setInt(3, snum);
 				java.util.Date utilDate = new java.util.Date();
-   				java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+				java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
 				stmt.setDate(4, sqlDate);
 				stmt.setNull(5, java.sql.Types.DATE);
 				stmt.executeUpdate();
-				System.out.print("Spacecraft returned successfully!");				
+				System.out.print("Spacecraft returned successfully!");
 			} else {
-				System.out.print("[Error]: Return not possible because the spacecraft has not yet been rented.");				
+				System.out.print("[Error]: Return not possible because the spacecraft has not yet been rented.");
 			}
 		}
 
@@ -697,23 +722,23 @@ public class CSCI3170Proj {
 	}
 
 	public static void listRentedByTime(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		String startTime = "";
-		PreparedStatement stmt = mySQLDB.prepareStatement("SELECT RR.Agency, RR.MID, RR.SNum, RR.CheckoutDate FROM RentalRecord RR where RR.CheckoutDate>=STR_TO_DATE(?,'%d-%m-%Y') and RR.CheckoutDate<=STR_TO_DATE(?,'%d-%m-%Y') order by CheckoutDate desc ");
-		
+		PreparedStatement stmt = mySQLDB.prepareStatement(
+				"SELECT RR.Agency, RR.MID, RR.SNum, RR.CheckoutDate FROM RentalRecord RR where RR.CheckoutDate>=STR_TO_DATE(?,'%d-%m-%Y') and RR.CheckoutDate<=STR_TO_DATE(?,'%d-%m-%Y') order by CheckoutDate desc ");
+
 		System.out.println();
 		System.out.print("Typing in the starting date [DD-MM-YYYY]:");
-		stmt.setString(1,menuAns.nextLine());
+		stmt.setString(1, menuAns.nextLine());
 		System.out.print("Typing in the ending date [DD-MM-YYYY]:");
-		stmt.setString(2,menuAns.nextLine());
-		
+		stmt.setString(2, menuAns.nextLine());
+
 		System.out.println("List of the unrented spacecraft:");
 		System.out.println("|Agency| MID|SNum|Checkout Date|");
 		ResultSet resultSet = stmt.executeQuery();
-		while(resultSet.next()){
-			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));   
-			System.out.print("|" + String.format("%1$3s", resultSet.getString(2)));   
-			System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));   
-			System.out.print("|" + String.format("%1$13s", resultSet.getString(4)));   
+		while (resultSet.next()) {
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));
+			System.out.print("|" + String.format("%1$3s", resultSet.getString(2)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));
+			System.out.print("|" + String.format("%1$13s", resultSet.getString(4)));
 			System.out.println("|");
 		}
 		System.out.println("End of Query");
@@ -722,12 +747,12 @@ public class CSCI3170Proj {
 	}
 
 	public static void listRentedNum(Scanner menuAns, Connection mySQLDB) throws SQLException {
-		String startTime = "";
-		PreparedStatement stmt = mySQLDB.prepareStatement("select RR.Agency,count(*) from RentalRecord RR where RR.returndate is null group by RR.agency order by agency asc; ");
+		PreparedStatement stmt = mySQLDB.prepareStatement(
+				"select RR.Agency,count(*) from RentalRecord RR where RR.returndate is null group by RR.agency order by agency asc; ");
 		System.out.println("|Agency|Number|");
 		ResultSet resultSet = stmt.executeQuery();
-		while(resultSet.next()){
-			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));   
+		while (resultSet.next()) {
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));
 			System.out.print("|" + String.format("%1$6s", resultSet.getString(2)));
 			System.out.println("|");
 		}
