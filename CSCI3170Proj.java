@@ -45,6 +45,20 @@ public class CSCI3170Proj {
 		stmt.close();
 	}
 
+	public static boolean checkTableExistence(Connection mySQLDB) throws SQLException {
+		Statement stmt_checkexist = mySQLDB.createStatement();
+		ResultSet rs_checkexist = stmt_checkexist.executeQuery(
+				"SELECT count(*) FROM information_schema.tables WHERE table_name ='NEA' or table_name='Resource' or table_name='Spacecraft_Model' or table_name='RentalRecord';");
+		rs_checkexist.next();
+		int num = rs_checkexist.getInt(1);
+		rs_checkexist.close();
+		stmt_checkexist.close();
+		if (num == 4)
+			return true;
+		else
+			return false;
+	}
+
 	public static void createTables(Connection mySQLDB) throws SQLException {
 		String Resource_SQL = "CREATE TABLE IF NOT EXISTS Resource (";
 		Resource_SQL += "RType VARCHAR(2) PRIMARY KEY NOT NULL,";
@@ -114,6 +128,10 @@ public class CSCI3170Proj {
 	}
 
 	public static void loadTables(Scanner menuAns, Connection mySQLDB) throws SQLException {
+		if (!checkTableExistence(mySQLDB)) {
+			System.out.println("[Error]: Tables do not exist. Please create tables first!!!");
+			return;
+		}
 
 		String filePath = "";
 		while (true) {
@@ -122,6 +140,8 @@ public class CSCI3170Proj {
 			filePath = menuAns.nextLine();
 			if ((new File(filePath)).isDirectory())
 				break;
+			else
+				System.out.println("[Error]: Please enter a correct folder path!!!");
 		}
 
 		System.out.print("Processing...");
@@ -230,6 +250,11 @@ public class CSCI3170Proj {
 	}
 
 	public static void showTables(Scanner menuAns, Connection mySQLDB) throws SQLException {
+		if (!checkTableExistence(mySQLDB)) {
+			System.out.println("[Error]: Tables do not exist. Please create tables first!!!");
+			return;
+		}
+
 		String[] table_name = { "Resource", "NEA", "Spacecraft_Model", "RentalRecord" };
 
 		System.out.println("Number of records in each table:");
@@ -276,6 +301,11 @@ public class CSCI3170Proj {
 	}
 
 	public static void neaSearch(Scanner menuAns, Connection mySQLDB) throws SQLException {
+		if (!checkTableExistence(mySQLDB)) {
+			System.out.println("[Error]: Tables do not exist. Please create tables first!!!");
+			return;
+		}
+
 		String method = "";
 		String keyword = "";
 		String searchSQL = "";
@@ -335,6 +365,10 @@ public class CSCI3170Proj {
 	}
 
 	public static void spacecraftSearch(Scanner menuAns, Connection mySQLDB) throws SQLException {
+		if (!checkTableExistence(mySQLDB)) {
+			System.out.println("[Error]: Tables do not exist. Please create tables first!!!");
+			return;
+		}
 
 		String answer = "";
 		String keyword = "";
@@ -409,6 +443,11 @@ public class CSCI3170Proj {
 	}
 
 	public static void certainDesign(Scanner menuAns, Connection mySQLDB) throws SQLException {
+		if (!checkTableExistence(mySQLDB)) {
+			System.out.println("[Error]: Tables do not exist. Please create tables first!!!");
+			return;
+		}
+
 		//Testdata: FUCKSHIT not available in NEA list
 		//Testdata: 2008GD110 no resource
 		//Testdata: ??? very large Duration/Energy?
@@ -472,6 +511,11 @@ public class CSCI3170Proj {
 	}
 
 	public static void bestDesign(Scanner menuAns, Connection mySQLDB) throws SQLException {
+		if (!checkTableExistence(mySQLDB)) {
+			System.out.println("[Error]: Tables do not exist. Please create tables first!!!");
+			return;
+		}
+
 		String answer = "";
 		while (true) {
 			System.out.print("Typing in your budget [$]: ");
@@ -574,6 +618,11 @@ public class CSCI3170Proj {
 	}
 
 	public static void rentSpacecraft(Scanner menuAns, Connection mySQLDB) throws SQLException {
+		if (!checkTableExistence(mySQLDB)) {
+			System.out.println("[Error]: Tables do not exist. Please create tables first!!!");
+			return;
+		}
+
 		//Testdata: RSA 0199 5 not available in spacecraft list
 		//Testdata: RSA 0198 9 SNum > Num
 		//Testdata: RSA 0292 5 returned
@@ -628,6 +677,11 @@ public class CSCI3170Proj {
 	}
 
 	public static void returnSpacecraft(Scanner menuAns, Connection mySQLDB) throws SQLException {
+		if (!checkTableExistence(mySQLDB)) {
+			System.out.println("[Error]: Tables do not exist. Please create tables first!!!");
+			return;
+		}
+
 		//Testdata: RSA 0199 5 not available in spacecraft list
 		//Testdata: RSA 0198 9 SNum > Num
 		//Testdata: RSA 0292 5 returned
@@ -679,6 +733,11 @@ public class CSCI3170Proj {
 	}
 
 	public static void listRentedByTime(Scanner menuAns, Connection mySQLDB) throws SQLException {
+		if (!checkTableExistence(mySQLDB)) {
+			System.out.println("[Error]: Tables do not exist. Please create tables first!!!");
+			return;
+		}
+
 		PreparedStatement stmt = mySQLDB.prepareStatement(
 				"SELECT RR.Agency, RR.MID, RR.SNum, RR.CheckoutDate FROM RentalRecord RR where RR.CheckoutDate>=STR_TO_DATE(?,'%d-%m-%Y') and RR.CheckoutDate<=STR_TO_DATE(?,'%d-%m-%Y') and RR.ReturnDate is null order by CheckoutDate desc ");
 
@@ -704,6 +763,11 @@ public class CSCI3170Proj {
 	}
 
 	public static void listRentedNum(Scanner menuAns, Connection mySQLDB) throws SQLException {
+		if (!checkTableExistence(mySQLDB)) {
+			System.out.println("[Error]: Tables do not exist. Please create tables first!!!");
+			return;
+		}
+
 		PreparedStatement stmt = mySQLDB.prepareStatement(
 				"select RR.Agency,count(*) from RentalRecord RR where RR.returndate is null group by RR.agency order by agency asc; ");
 		System.out.println("|Agency|Number|");
