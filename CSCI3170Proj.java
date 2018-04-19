@@ -2,6 +2,7 @@ import java.util.Scanner;
 import java.util.Date;
 import java.sql.*;
 import java.io.*;
+import java.text.SimpleDateFormat;
 
 public class CSCI3170Proj {
 	public static Connection connectToOracle() {
@@ -750,11 +751,12 @@ public class CSCI3170Proj {
 		System.out.println("List of the unreturned spacecraft:");
 		System.out.println("|Agency| MID|SNum|Checkout Date|");
 		ResultSet resultSet = stmt.executeQuery();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 		while (resultSet.next()) {
 			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));
 			System.out.print("|" + String.format("%1$3s", resultSet.getString(2)));
 			System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));
-			System.out.print("|" + String.format("%1$13s", resultSet.getString(4)));
+			System.out.print("|" + String.format("%1$13s", dateFormat.format(resultSet.getDate(4))));
 			System.out.println("|");
 		}
 		System.out.println("End of Query");
