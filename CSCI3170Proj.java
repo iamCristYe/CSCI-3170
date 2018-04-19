@@ -1,5 +1,6 @@
 import java.util.Scanner;
 import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.sql.*;
 import java.io.*;
 
@@ -415,22 +416,23 @@ public class CSCI3170Proj {
 		} else if (answer.equals("5")) {
 			searchSQL += "AND S.Capacity>" + keyword;
 		}
+
+		searchSQL += " ORDER BY S.Agency ASC, S.MID ASC, SNum ASC ";
+
 		PreparedStatement stmt = mySQLDB.prepareStatement(searchSQL);
 		System.out.println();
 		System.out.println("|Agency| MID|SNum|Type|Energy|  T|Capacity|Charge|");
 		ResultSet resultSet = stmt.executeQuery();
 		while (resultSet.next()) {
-			for (int i = 1; i <= 8; i++) {
-				System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));
-				System.out.print("|" + String.format("%1$4s", resultSet.getString(2)));
-				System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));
-				System.out.print("|" + String.format("%1$4s", resultSet.getString(4)));
-				System.out.print("|" + String.format("%1$6s", remove0(resultSet.getString(5))));
-				System.out.print("|" + String.format("%1$3s", resultSet.getString(6)));
-				System.out.print("|" + String.format("%1$8s", resultSet.getString(7)));
-				System.out.print("|" + String.format("%1$6s", resultSet.getString(8)));
-				System.out.println("|");
-			}
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(2)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(4)));
+			System.out.print("|" + String.format("%1$6s", remove0(resultSet.getString(5))));
+			System.out.print("|" + String.format("%1$3s", resultSet.getString(6)));
+			System.out.print("|" + String.format("%1$8s", resultSet.getString(7)));
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(8)));
+			System.out.println("|");
 		}
 		System.out.println("End of Query");
 		resultSet.close();
@@ -750,11 +752,12 @@ public class CSCI3170Proj {
 		System.out.println("List of the unreturned spacecraft:");
 		System.out.println("|Agency| MID|SNum|Checkout Date|");
 		ResultSet resultSet = stmt.executeQuery();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 		while (resultSet.next()) {
 			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));
 			System.out.print("|" + String.format("%1$3s", resultSet.getString(2)));
 			System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));
-			System.out.print("|" + String.format("%1$13s", resultSet.getString(4)));
+			System.out.print("|" + String.format("%1$13s", dateFormat.format(resultSet.getDate(4))));
 			System.out.println("|");
 		}
 		System.out.println("End of Query");
