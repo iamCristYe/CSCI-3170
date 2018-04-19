@@ -421,17 +421,15 @@ public class CSCI3170Proj {
 		System.out.println("|Agency| MID|SNum|Type|Energy|  T|Capacity|Charge|");
 		ResultSet resultSet = stmt.executeQuery();
 		while (resultSet.next()) {
-			for (int i = 1; i <= 8; i++) {
-				System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));
-				System.out.print("|" + String.format("%1$4s", resultSet.getString(2)));
-				System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));
-				System.out.print("|" + String.format("%1$4s", resultSet.getString(4)));
-				System.out.print("|" + String.format("%1$6s", remove0(resultSet.getString(5))));
-				System.out.print("|" + String.format("%1$3s", resultSet.getString(6)));
-				System.out.print("|" + String.format("%1$8s", resultSet.getString(7)));
-				System.out.print("|" + String.format("%1$6s", resultSet.getString(8)));
-				System.out.println("|");
-			}
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(1)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(2)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(3)));
+			System.out.print("|" + String.format("%1$4s", resultSet.getString(4)));
+			System.out.print("|" + String.format("%1$6s", remove0(resultSet.getString(5))));
+			System.out.print("|" + String.format("%1$3s", resultSet.getString(6)));
+			System.out.print("|" + String.format("%1$8s", resultSet.getString(7)));
+			System.out.print("|" + String.format("%1$6s", resultSet.getString(8)));
+			System.out.println("|");
 		}
 		System.out.println("End of Query");
 		resultSet.close();
