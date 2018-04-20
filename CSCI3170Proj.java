@@ -3,7 +3,7 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.sql.*;
 import java.io.*;
-import java.text.SimpleDateFormat;
+
 
 public class CSCI3170Proj {
 	public static Connection connectToOracle() {
